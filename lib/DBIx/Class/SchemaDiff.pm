@@ -9,11 +9,9 @@ our $VERSION = 0.01;
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
 use Module::Runtime;
+use Try::Tiny;
 
-use DBIx::Class::SchemaDiff::Column;
-use DBIx::Class::SchemaDiff::Relationship;
-
-use Hash::Diff;
+use DBIx::Class::SchemaDiff::Source;
 
 has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
@@ -45,49 +43,37 @@ sub _auto_connect_schema {
 }
 
 
-###################################################################
-
-has 'old_data', is => 'ro', lazy => 1, default => sub {
+has 'sources', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
-  return $self->_schema_data( $self->old_schema );
-}, init_arg => undef, isa => HashRef;
-
-has 'new_data', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return $self->_schema_data( $self->new_schema );
-}, init_arg => undef, isa => HashRef;
-
-has 'diff_data', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return Hash::Diff::diff(
-    $self->old_data,
-    $self->new_data
-  );
-}, init_arg => undef, isa => HashRef;
-
-
-sub _schema_data {
-  my ($self, $schema) = @_;
+  
+  my ($o,$n) = ($self->old_schema,$self->new_schema);
+  
+  # List of all sources in old, new, or both:
+  my %seen = ();
+  my @sources = grep { !$seen{$_}++ } ($o->sources,$n->sources);
   
   return {
-    map {
-      my $source = $_;
-      $source => {
-        columns => {
-          map {
-            $_ => $schema->source($source)->column_info($_)
-          } $schema->source($source)->columns 
-        },
-        relationships => {
-          map {
-            $_ => $schema->source($source)->relationship_info($_)
-          } $schema->source($source)->relationships
-        }
-      }
-    } $schema->sources 
+    map { $_ => DBIx::Class::SchemaDiff::Source->new(
+      old_source => try{$o->source($_)},
+      new_source => try{$n->source($_)}
+    ) } @sources 
   };
-}
 
+}, init_arg => undef, isa => HashRef;
+
+
+has 'diff', is => 'ro', lazy => 1, default => sub { 
+  my $self = shift;
+  
+  # TODO: handle added/deleted/changed at this level, too...
+  my $diff = { map {
+    $_->diff ? ($_->name => $_->diff) : ()
+  } values %{$self->sources} };
+  
+  return undef unless (keys %$diff > 0); 
+  return $diff;
+  
+}, init_arg => undef, isa => Maybe[HashRef];
 
 
 1;
@@ -101,17 +87,14 @@ DBIx::Class::SchemaDiff - Simple Diffing of DBIC Schemas
 
 =head1 SYNOPSIS
 
- my $schema1 = My::Schema1->connect(@connect1);
- my $schema2 = My::Schema1->connect(@connect1);
-
  use DBIx::Class::SchemaDiff;
 
  my $Diff = DBIx::Class::SchemaDiff->new(
-   old_schema => $schema1,
-   new_schema => $schema2
+   old_schema => 'My::Schema1',
+   new_schema => 'My::Schema2'
  );
  
- my $hash = $Diff->diff_data;
+ my $hash = $Diff->diff;
 
 =head1 DESCRIPTION
 
