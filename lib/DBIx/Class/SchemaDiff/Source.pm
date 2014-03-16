@@ -15,6 +15,10 @@ has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::ResultSource'
 ]];
 
+has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
+  'DBIx::Class::SchemaDiff'
+];
+
 has 'name', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
   # TODO: handle new_source/old_source with different names
@@ -46,9 +50,10 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
-      name => $_,
-      old_info  => $o && $o->has_column($_) ? $o->column_info($_) : undef,
-      new_info  => $n && $n->has_column($_) ? $n->column_info($_) : undef,
+      name        => $_,
+      old_info    => $o && $o->has_column($_) ? $o->column_info($_) : undef,
+      new_info    => $n && $n->has_column($_) ? $n->column_info($_) : undef,
+      source_diff => $self
     ) } @columns 
   };
 
@@ -66,9 +71,10 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
-      name => $_,
-      old_info  => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
-      new_info  => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
+      name        => $_,
+      old_info    => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
+      new_info    => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
+      source_diff => $self
     ) } @rels
   };
   

@@ -9,6 +9,14 @@ has 'name', required => 1, is => 'ro', isa => Str;
 has 'old_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 has 'new_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 
+has 'source_diff', required => 1, is => 'ro', isa => InstanceOf[
+  'DBIx::Class::SchemaDiff::Source'
+];
+
+sub old_schemaclass { (shift)->source_diff->schema_diff->old_schemaclass }
+sub new_schemaclass { (shift)->source_diff->schema_diff->new_schemaclass }
+
+
 has 'added', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
   defined $self->new_info && ! defined $self->old_info
@@ -127,6 +135,20 @@ sub _is_eq {
     else {
       die "Unexpected ref type '$n_ref'";
     }
+  }
+  
+  my $o_class = $self->old_schemaclass;
+  my $n_class = $self->new_schemaclass;
+  
+  # Special check/test: string values that start with the schema
+  # class name need to have it stripped before comparing, because we
+  # expect different schema class names. This handles cases like
+  # relationships which reference other schema classes via their
+  # "absolute" class/path. This operation essentially makes the
+  # check "relative" like we need it to be.
+  if($new =~ /^${n_class}/) {
+    $new =~ s/^${n_class}//;
+    $old =~ s/^${o_class}//;
   }
 
   # simple scalar value comparison:

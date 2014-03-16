@@ -8,6 +8,7 @@ our $VERSION = 0.01;
 
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
+use Scalar::Util qw(blessed);
 use Module::Runtime;
 use Try::Tiny;
 
@@ -20,6 +21,15 @@ has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
 has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
+
+has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
+  blessed((shift)->old_schema)
+}, init_arg => undef, isa => Str;
+
+has 'new_schemaclass', is => 'ro', lazy => 1, default => sub { 
+  blessed((shift)->new_schema)
+}, init_arg => undef, isa => Str;
+
 
 around BUILDARGS => sub {
   my ($orig, $self, @args) = @_;
@@ -43,6 +53,7 @@ sub _auto_connect_schema {
 }
 
 
+
 has 'sources', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
   
@@ -54,8 +65,9 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::Source->new(
-      old_source => try{$o->source($_)},
-      new_source => try{$n->source($_)}
+      old_source  => try{$o->source($_)},
+      new_source  => try{$n->source($_)},
+      schema_diff => $self
     ) } @sources 
   };
 
