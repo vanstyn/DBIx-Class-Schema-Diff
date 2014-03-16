@@ -4,7 +4,6 @@ use warnings;
 
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
-use Hash::Diff;
 
 use DBIx::Class::SchemaDiff::InfoPacket;
 
