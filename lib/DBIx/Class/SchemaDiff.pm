@@ -8,6 +8,11 @@ our $VERSION = 0.01;
 
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
+use Module::Runtime;
+
+use DBIx::Class::SchemaDiff::Column;
+use DBIx::Class::SchemaDiff::Relationship;
+
 use Hash::Diff;
 
 has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
@@ -17,6 +22,27 @@ has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
 has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
+
+around BUILDARGS => sub {
+  my ($orig, $self, @args) = @_;
+  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
+  
+  # Allow old/new schema to be supplied as either connected instances
+  # or class names. If class names, we'll automatically connect them
+  # to an SQLite::memory instance.
+  $opt{old_schema} = $self->_auto_connect_schema($opt{old_schema});
+  $opt{new_schema} = $self->_auto_connect_schema($opt{new_schema});
+
+  return $self->$orig(%opt);
+};
+
+sub _auto_connect_schema {
+  my ($self,$class) = @_;
+  return $class unless (defined $class && ! ref($class));
+  Module::Runtime::require_module($class);
+  return $class unless ($class->can('connect'));
+  return $class->connect('dbi:SQLite::memory:','','');
+}
 
 
 ###################################################################
