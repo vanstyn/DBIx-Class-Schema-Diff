@@ -69,15 +69,59 @@ $s1b->source('Country')->add_columns( foo => {
 
 is_deeply(
   NewD( old_schema => $s1, new_schema => $s1b )->diff,
-  { 'Country' => { 
-    'columns' => {
-      'foo' => { '_event' => 'added' }
-    },
-    '_event' => 'changed'
-  }},
-  "Saw added column 'foo'"
+  {
+    Country => {
+      _event => "changed",
+      columns => {
+        foo => {
+          _event => "added"
+        }
+      }
+    }
+  },
+  "Saw on-the-fly added column 'foo'"
 );
 
+
+# add to existing columns to change their attrs:
+$s1b->source('Customer')->add_columns( 
+  "first_name",
+  { data_type => "varchar", is_nullable => 1, size => 45 },
+  "last_name",
+  { data_type => "varchar", is_nullable => 0, size => 60 }
+);
+
+is_deeply(
+  NewD( old_schema => $s1, new_schema => $s1b )->diff,
+  {
+    Country => {
+      _event => "changed",
+      columns => {
+        foo => {
+          _event => "added"
+        }
+      }
+    },
+    Customer => {
+      _event => "changed",
+      columns => {
+        first_name => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        },
+        last_name => {
+          _event => "changed",
+          diff => {
+            size => 60
+          }
+        }
+      }
+    }
+  },
+  "Saw on-the-fly changes to 'first_name' and 'last_name' columns"
+);
 
 
 
@@ -100,9 +144,26 @@ is_deeply(
         }
       }
     },
+    City => {
+      _event => "changed",
+      unique_constraints => {
+        primary => {
+          _event => "deleted"
+        }
+      }
+    },
     Film => {
       _event => "changed",
       columns => {
+        film_id => {
+          _event => "changed",
+          diff => {
+            is_auto_increment => 0
+          }
+        },
+        id => {
+          _event => "added"
+        },
         rating => {
           _event => "changed",
           diff => {
@@ -124,6 +185,16 @@ is_deeply(
             size => [
               6,
               2
+            ]
+          }
+        }
+      },
+      unique_constraints => {
+        primary => {
+          _event => "changed",
+          diff => {
+            columns => [
+              "id"
             ]
           }
         }
@@ -149,10 +220,26 @@ is_deeply(
         customer => {
           _event => "deleted"
         }
+      },
+      unique_constraints => {
+        rental_date => {
+          _event => "deleted"
+        },
+        rental_date1 => {
+          _event => "added"
+        }
       }
     },
     SaleByStore => {
       _event => "deleted"
+    },
+    Store => {
+      _event => "changed",
+      unique_constraints => {
+        idx_unique_store_manager => {
+          _event => "added"
+        }
+      }
     }
   },
   "Saw expected changes between Sakila and Sakila3"
@@ -160,3 +247,11 @@ is_deeply(
 
 
 done_testing;
+
+
+# -- for debugging:
+#
+#use Data::Dumper::Concise;
+#print STDERR "\n\n" . Dumper(
+#  NewD( old_schema => $s1, new_schema => $s1b )->diff
+#) . "\n\n";

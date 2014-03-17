@@ -114,7 +114,7 @@ __PACKAGE__->add_columns(
   },
 );
 __PACKAGE__->set_primary_key("rental_id");
-__PACKAGE__->add_unique_constraint("rental_date", ["rental_date", "inventory_id", "customer_id"]);
+__PACKAGE__->add_unique_constraint("rental_date1", ["rental_date", "inventory_id", "customer_id"]);
 
 =head1 RELATIONS
 

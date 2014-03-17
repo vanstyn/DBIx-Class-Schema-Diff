@@ -83,6 +83,7 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("store_id");
 __PACKAGE__->add_unique_constraint("idx_unique_manager", ["manager_staff_id"]);
+__PACKAGE__->add_unique_constraint("idx_unique_store_manager", ["store_id","manager_staff_id"]);
 
 =head1 RELATIONS
 

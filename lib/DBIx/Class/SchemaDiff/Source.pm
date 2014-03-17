@@ -82,6 +82,33 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => HashRef;
 
 
+has 'unique_constraints', is => 'ro', lazy => 1, default => sub { 
+  my $self = shift;
+  
+  my ($o,$n) = ($self->old_source,$self->new_source);
+  
+  # List of all unique_constraint_names in old, new, or both:
+  my %seen = ();
+  my @consts = grep {!$seen{$_}++} (
+    try{$o->unique_constraint_names},
+    try{$n->unique_constraint_names}
+  );
+  
+  return {
+    map { 
+      my @o_uc_cols = try{$o->unique_constraint_columns($_)};
+      my @n_uc_cols = try{$n->unique_constraint_columns($_)};
+      $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
+        name        => $_,
+        old_info    => scalar(@o_uc_cols) > 0 ? { columns => \@o_uc_cols } : undef,
+        new_info    => scalar(@n_uc_cols) > 0 ? { columns => \@n_uc_cols } : undef,
+        source_diff => $self
+      ) 
+    } @consts
+  };
+  
+}, init_arg => undef, isa => HashRef;
+
 
 has 'diff', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
@@ -102,7 +129,12 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   } values %{$self->relationships} };
   delete $diff->{relationships} unless (keys %{$diff->{relationships}} > 0);
   
-  # TODO: other data points TDB (indexes, etc)
+  $diff->{unique_constraints} = { map {
+    $_->diff ? ($_->name => $_->diff) : ()
+  } values %{$self->unique_constraints} };
+  delete $diff->{unique_constraints} unless (keys %{$diff->{unique_constraints}} > 0);
+  
+  # TODO: other data points TDB 
   # ...
   
   # No changes:
@@ -113,7 +145,7 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   
 }, init_arg => undef, isa => Maybe[HashRef];
 
-
+sub _info_diff { (shift)->schema_diff->_info_diff(@_) }
 
 
 
