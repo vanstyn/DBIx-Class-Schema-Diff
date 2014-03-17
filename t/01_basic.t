@@ -250,6 +250,129 @@ is_deeply(
   "Saw expected changes between Sakila and Sakila3"
 );
 
+is_deeply(
+  NewD( old_schema => $s3, new_schema => $s1 )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "-Test::DummyClass"
+      ],
+      relationships => {
+        customers2 => {
+          _event => "deleted"
+        },
+        staffs => {
+          _event => "changed",
+          diff => {
+            attrs => {
+              cascade_delete => 0
+            }
+          }
+        }
+      },
+      table_name => "address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city",
+      unique_constraints => {
+        primary => {
+          _event => "added"
+        }
+      }
+    },
+    Film => {
+      _event => "changed",
+      columns => {
+        film_id => {
+          _event => "changed",
+          diff => {
+            is_auto_increment => 1
+          }
+        },
+        id => {
+          _event => "deleted"
+        },
+        rating => {
+          _event => "changed",
+          diff => {
+            extra => {
+              list => [
+                "G",
+                "PG",
+                "PG-13",
+                "R",
+                "NC-17"
+              ]
+            }
+          }
+        },
+        rental_rate => {
+          _event => "changed",
+          diff => {
+            size => [
+              4,
+              2
+            ]
+          }
+        }
+      },
+      unique_constraints => {
+        primary => {
+          _event => "changed",
+          diff => {
+            columns => [
+              "film_id"
+            ]
+          }
+        }
+      }
+    },
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 0
+          }
+        }
+      }
+    },
+    FooBar => {
+      _event => "deleted"
+    },
+    Rental => {
+      _event => "changed",
+      relationships => {
+        customer => {
+          _event => "added"
+        }
+      },
+      unique_constraints => {
+        rental_date => {
+          _event => "added"
+        },
+        rental_date1 => {
+          _event => "deleted"
+        }
+      }
+    },
+    SaleByStore => {
+      _event => "added"
+    },
+    Store => {
+      _event => "changed",
+      unique_constraints => {
+        idx_unique_store_manager => {
+          _event => "deleted"
+        }
+      }
+    }
+  },
+  "Saw expected changes between Sakila3 and Sakila"
+);
 
 done_testing;
 
