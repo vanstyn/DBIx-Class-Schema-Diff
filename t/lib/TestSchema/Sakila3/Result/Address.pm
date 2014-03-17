@@ -17,7 +17,7 @@ TestSchema::Sakila3::Result::Address
 
 =cut
 
-__PACKAGE__->table("address");
+__PACKAGE__->table("sakila.address");
 
 =head1 ACCESSORS
 

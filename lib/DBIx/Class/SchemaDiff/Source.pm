@@ -134,6 +134,10 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   } values %{$self->unique_constraints} };
   delete $diff->{unique_constraints} unless (keys %{$diff->{unique_constraints}} > 0);
   
+  my $o_tbl = try{$self->old_source->from};
+  my $n_tbl = try{$self->new_source->from};
+  $diff->{table_name} = $n_tbl unless ($self->_is_eq($o_tbl,$n_tbl));
+  
   # TODO: other data points TDB 
   # ...
   
@@ -146,6 +150,7 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => Maybe[HashRef];
 
 sub _info_diff { (shift)->schema_diff->_info_diff(@_) }
+sub _is_eq     { (shift)->schema_diff->_is_eq(@_) }
 
 
 

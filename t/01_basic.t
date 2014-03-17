@@ -142,10 +142,12 @@ is_deeply(
             }
           }
         }
-      }
+      },
+      table_name => "sakila.address"
     },
     City => {
       _event => "changed",
+      table_name => "city1",
       unique_constraints => {
         primary => {
           _event => "deleted"
@@ -253,5 +255,5 @@ done_testing;
 #
 #use Data::Dumper::Concise;
 #print STDERR "\n\n" . Dumper(
-#  NewD( old_schema => $s1, new_schema => $s1b )->diff
+#  NewD( old_schema => $s1, new_schema => $s3 )->diff
 #) . "\n\n";

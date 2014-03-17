@@ -17,7 +17,7 @@ TestSchema::Sakila3::Result::City
 
 =cut
 
-__PACKAGE__->table("city");
+__PACKAGE__->table("city1");
 
 =head1 ACCESSORS
 
