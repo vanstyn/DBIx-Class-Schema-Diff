@@ -4,6 +4,7 @@ use warnings;
 
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
+use Try::Tiny;
 
 use DBIx::Class::SchemaDiff::InfoPacket;
 
@@ -46,7 +47,7 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
   
   # List of all columns in old, new, or both:
   my %seen = ();
-  my @columns = grep {!$seen{$_}++} ($o->columns, $n->columns);
+  my @columns = grep {!$seen{$_}++} (try{$o->columns}, try{$n->columns});
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
@@ -67,7 +68,7 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
   
   # List of all relationships in old, new, or both:
   my %seen = ();
-  my @rels = grep {!$seen{$_}++} ($o->relationships,$n->relationships);
+  my @rels = grep {!$seen{$_}++} (try{$o->relationships},try{$n->relationships});
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(

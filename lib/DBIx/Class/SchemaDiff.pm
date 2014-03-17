@@ -65,8 +65,8 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   
   return {
     map { $_ => DBIx::Class::SchemaDiff::Source->new(
-      old_source  => try{$o->source($_)},
-      new_source  => try{$n->source($_)},
+      old_source  => scalar try{$o->source($_)},
+      new_source  => scalar try{$n->source($_)},
       schema_diff => $self
     ) } @sources 
   };
