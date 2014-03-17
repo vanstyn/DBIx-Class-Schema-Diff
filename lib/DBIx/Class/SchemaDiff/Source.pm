@@ -20,6 +20,16 @@ has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::SchemaDiff'
 ];
 
+has 'old_class', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  $self->old_source->schema->class( $self->old_source->source_name );
+}, init_arg => undef, isa => Str;
+
+has 'new_class', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  $self->new_source->schema->class( $self->new_source->source_name );
+}, init_arg => undef, isa => Str;
+
 has 'name', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
   # TODO: handle new_source/old_source with different names
@@ -137,6 +147,10 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   my $o_tbl = try{$self->old_source->from};
   my $n_tbl = try{$self->new_source->from};
   $diff->{table_name} = $n_tbl unless ($self->_is_eq($o_tbl,$n_tbl));
+  
+  my $o_isa = mro::get_linear_isa($self->old_class);
+  my $n_isa = mro::get_linear_isa($self->new_class);
+  $diff->{inheritance} = $n_isa unless ($self->_is_eq($o_isa,$n_isa));
   
   # TODO: other data points TDB 
   # ...

@@ -180,6 +180,11 @@ sub _is_eq {
       # If the hashes are equal, the diff should be undef:
       return $self->_info_diff($old,$new) ? 0 : 1;
     }
+    elsif(blessed $new) {
+      # If this is an object reference, just compare the classes, since we don't
+      # know how to compare object data and won't try:
+      return $self->_is_eq(blessed($old),blessed($new));
+    }
     else {
       die "Unexpected ref type '$n_ref'";
     }

@@ -182,5 +182,8 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+{ package Test::DummyClass; $INC{'Test/DummyClass.pm'} = __FILE__ }
+__PACKAGE__->load_components("+Test::DummyClass");
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
