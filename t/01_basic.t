@@ -69,13 +69,14 @@ $s1b->source('Country')->add_columns( foo => {
 
 is_deeply(
   NewD( old_schema => $s1, new_schema => $s1b )->diff,
-  { 'Country' => { 'columns' => {
-    'foo' => { '_event' => 'added', 'info' => {
-      'data_type' => 'varchar',
-      'is_nullable' => 0,
-      'size' => 50
-    }}
-  }}},
+  { 'Country' => { 
+    'columns' => {
+      'foo' => { '_event' => 'added', 'info' => {
+        data_type => "varchar", is_nullable => 0, size => 50
+      }}
+    },
+    '_event' => 'changed'
+  }},
   "Saw added column 'foo'"
 );
 

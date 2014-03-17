@@ -101,8 +101,12 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   # TODO: other data points TDB (indexes, etc)
   # ...
   
+  # No changes:
+  return undef unless (keys %$diff > 0);
   
-  return undef unless (keys %$diff > 0); 
+  $diff->{_event} = $self->added ? 'added' : 
+    $self->deleted ? 'deleted' : 'changed';
+  
   return $diff;
   
 }, init_arg => undef, isa => Maybe[HashRef];
