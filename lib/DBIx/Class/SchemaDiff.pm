@@ -11,6 +11,7 @@ use MooX::Types::MooseLike::Base 0.25 qw(:all);
 use Scalar::Util qw(blessed);
 use Module::Runtime;
 use Try::Tiny;
+use Array::Diff;
 
 use DBIx::Class::SchemaDiff::Source;
 

@@ -130,32 +130,8 @@ is_deeply(
   {
     Address => {
       _event => "changed",
-      inheritance => [
-        "TestSchema::Sakila3::Result::Address",
-        "Test::DummyClass",
-        "DBIx::Class::InflateColumn::DateTime",
-        "DBIx::Class::Core",
-        "DBIx::Class::Relationship",
-        "DBIx::Class::Relationship::Helpers",
-        "DBIx::Class::Relationship::HasMany",
-        "DBIx::Class::Relationship::HasOne",
-        "DBIx::Class::Relationship::BelongsTo",
-        "DBIx::Class::Relationship::ManyToMany",
-        "DBIx::Class::Relationship::Accessor",
-        "DBIx::Class::Relationship::CascadeActions",
-        "DBIx::Class::Relationship::ProxyMethods",
-        "DBIx::Class::Relationship::Base",
-        "DBIx::Class::InflateColumn",
-        "DBIx::Class::PK::Auto",
-        "DBIx::Class::PK",
-        "DBIx::Class::Row",
-        "DBIx::Class::ResultSourceProxy::Table",
-        "DBIx::Class::ResultSourceProxy",
-        "DBIx::Class",
-        "DBIx::Class::Componentised",
-        "Class::C3::Componentised",
-        "DBIx::Class::AccessorGroup",
-        "Class::Accessor::Grouped"
+      isa => [
+        "+Test::DummyClass",
       ],
       relationships => {
         customers2 => {

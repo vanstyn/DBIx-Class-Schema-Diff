@@ -22,13 +22,15 @@ has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
 
 has 'old_class', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
+  return undef unless ($self->old_source);
   $self->old_source->schema->class( $self->old_source->source_name );
-}, init_arg => undef, isa => Str;
+}, init_arg => undef, isa => Maybe[Str];
 
 has 'new_class', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
+  return undef unless ($self->new_source);
   $self->new_source->schema->class( $self->new_source->source_name );
-}, init_arg => undef, isa => Str;
+}, init_arg => undef, isa => Maybe[Str];
 
 has 'name', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
@@ -120,6 +122,31 @@ has 'unique_constraints', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => HashRef;
 
 
+has 'isa_diff', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+
+  my ($o,$n) = ($self->old_class,$self->new_class);
+  my $o_isa = $o ? mro::get_linear_isa($o) : [];
+  my $n_isa = $n ? mro::get_linear_isa($n) : [];
+
+  # Normalize namespaces which match the old/new schema class
+  my $o_class = $self->schema_diff->old_schemaclass;
+  my $n_class = $self->schema_diff->new_schemaclass;
+  $_ =~ s/^${n_class}/\*/ for (@$n_isa);
+  $_ =~ s/^${o_class}/\*/ for (@$o_isa);
+
+  my $AD = Array::Diff->diff($o_isa,$n_isa);
+  my $diff = [
+    (map {'-'.$_} @{$AD->deleted}),
+    (map {'+'.$_} @{$AD->added})
+  ];
+
+  return scalar(@$diff) > 0 ? $diff : undef;
+
+}, init_arg => undef, isa => Maybe[ArrayRef];
+
+
+
 has 'diff', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
   
@@ -148,9 +175,7 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   my $n_tbl = try{$self->new_source->from};
   $diff->{table_name} = $n_tbl unless ($self->_is_eq($o_tbl,$n_tbl));
   
-  my $o_isa = mro::get_linear_isa($self->old_class);
-  my $n_isa = mro::get_linear_isa($self->new_class);
-  $diff->{inheritance} = $n_isa unless ($self->_is_eq($o_isa,$n_isa));
+  $diff->{isa} = $self->isa_diff if ($self->isa_diff);
   
   # TODO: other data points TDB 
   # ...
