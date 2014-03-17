@@ -1,6 +1,6 @@
 package TestSchema::Sakila2;
 
-# Same as TestSchema::Sakila but with misc changes...
+# Same as TestSchema::Sakila but with a different class name...
 use strict;
 use warnings;
 
