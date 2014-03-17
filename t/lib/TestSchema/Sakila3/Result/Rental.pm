@@ -170,12 +170,6 @@ Related object: L<TestSchema::Sakila3::Result::Customer>
 
 =cut
 
-__PACKAGE__->belongs_to(
-  "customer",
-  "TestSchema::Sakila3::Result::Customer",
-  { customer_id => "customer_id" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
-);
 
 
 # Created by DBIx::Class::Schema::Loader v0.07010 @ 2013-02-17 16:15:04

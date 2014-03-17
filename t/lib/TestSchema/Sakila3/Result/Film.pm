@@ -146,7 +146,7 @@ __PACKAGE__->add_columns(
     data_type => "decimal",
     default_value => "4.99",
     is_nullable => 0,
-    size => [4, 2],
+    size => [6, 2],
   },
   "length",
   { data_type => "smallint", extra => { unsigned => 1 }, is_nullable => 1 },
@@ -161,7 +161,7 @@ __PACKAGE__->add_columns(
   {
     data_type => "enum",
     default_value => "G",
-    extra => { list => ["G", "PG", "PG-13", "R", "NC-17"] },
+    extra => { list => ["G", "PG", "PG-13", "R", "NC-17", "TV-MA"] },
     is_nullable => 1,
   },
   "special_features",

@@ -86,6 +86,10 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
 has 'diff', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
   
+  # There is no reason to diff in the case of added/deleted:
+  return { _event => 'added'   } if ($self->added);
+  return { _event => 'deleted' } if ($self->deleted);
+  
   my $diff = {};
   
   $diff->{columns} = { map {
@@ -104,9 +108,7 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   # No changes:
   return undef unless (keys %$diff > 0);
   
-  $diff->{_event} = $self->added ? 'added' : 
-    $self->deleted ? 'deleted' : 'changed';
-  
+  $diff->{_event} = 'changed';
   return $diff;
   
 }, init_arg => undef, isa => Maybe[HashRef];

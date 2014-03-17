@@ -71,13 +71,91 @@ is_deeply(
   NewD( old_schema => $s1, new_schema => $s1b )->diff,
   { 'Country' => { 
     'columns' => {
-      'foo' => { '_event' => 'added', 'info' => {
-        data_type => "varchar", is_nullable => 0, size => 50
-      }}
+      'foo' => { '_event' => 'added' }
     },
     '_event' => 'changed'
   }},
   "Saw added column 'foo'"
+);
+
+
+
+
+is_deeply(
+  NewD( old_schema => $s1, new_schema => $s3 )->diff,
+  {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        },
+        staffs => {
+          _event => "changed",
+          diff => {
+            attrs => {
+              cascade_delete => 1
+            }
+          }
+        }
+      }
+    },
+    Film => {
+      _event => "changed",
+      columns => {
+        rating => {
+          _event => "changed",
+          diff => {
+            extra => {
+              list => [
+                "G",
+                "PG",
+                "PG-13",
+                "R",
+                "NC-17",
+                "TV-MA"
+              ]
+            }
+          }
+        },
+        rental_rate => {
+          _event => "changed",
+          diff => {
+            size => [
+              6,
+              2
+            ]
+          }
+        }
+      }
+    },
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    },
+    FooBar => {
+      _event => "added"
+    },
+    Rental => {
+      _event => "changed",
+      relationships => {
+        customer => {
+          _event => "deleted"
+        }
+      }
+    },
+    SaleByStore => {
+      _event => "deleted"
+    }
+  },
+  "Saw expected changes between Sakila and Sakila3"
 );
 
 

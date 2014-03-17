@@ -31,14 +31,14 @@ has 'deleted', is => 'ro', lazy => 1, default => sub {
 has 'diff', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
   
+  # There is no reason to diff in the case of added/deleted:
+  return { _event => 'added'   } if ($self->added);
+  return { _event => 'deleted' } if ($self->deleted);
+  
   my ($o,$n) = ($self->old_info,$self->new_info);
-  
-  return { _event => 'added',   info => $n } if ($self->added);
-  return { _event => 'deleted', info => $o } if ($self->deleted);
-  
   my $diff = $self->_info_diff($o,$n) or return undef;
 
-  return { _event => 'changed', info => $diff };
+  return { _event => 'changed', diff => $diff };
   
 }, init_arg => undef, isa => Maybe[HashRef];
 

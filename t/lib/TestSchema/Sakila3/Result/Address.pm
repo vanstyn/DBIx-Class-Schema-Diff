@@ -152,7 +152,7 @@ __PACKAGE__->has_many(
   "staffs",
   "TestSchema::Sakila3::Result::Staff",
   { "foreign.address_id" => "self.address_id" },
-  { cascade_copy => 0, cascade_delete => 0 },
+  { cascade_copy => 0, cascade_delete => 1 },
 );
 
 =head2 stores
@@ -174,6 +174,12 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07010 @ 2013-02-17 16:15:04
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2IpqcMwZA7j+9RoW5A7Z7g
 
+__PACKAGE__->has_many(
+  "customers2",
+  "TestSchema::Sakila3::Result::Customer",
+  { "foreign.address_id" => "self.address_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
