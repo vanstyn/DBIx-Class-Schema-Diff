@@ -1,4 +1,5 @@
-package TestSchema::Sakila3::Result::Inventory;
+package # Hide from pause
+     TestSchema::Sakila3::Result::Inventory;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

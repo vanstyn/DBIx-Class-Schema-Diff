@@ -1,4 +1,5 @@
-package TestSchema::Sakila::Result::Address;
+package # Hide from pause
+     TestSchema::Sakila::Result::Address;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

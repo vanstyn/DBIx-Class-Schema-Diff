@@ -1,4 +1,5 @@
-package TestSchema::Sakila2::Result::Rental;
+package # Hide from pause
+     TestSchema::Sakila2::Result::Rental;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

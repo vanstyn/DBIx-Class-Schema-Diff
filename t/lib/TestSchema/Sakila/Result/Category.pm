@@ -1,4 +1,5 @@
-package TestSchema::Sakila::Result::Category;
+package # Hide from pause
+     TestSchema::Sakila::Result::Category;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

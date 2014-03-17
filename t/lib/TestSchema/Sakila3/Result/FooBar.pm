@@ -1,4 +1,5 @@
-package TestSchema::Sakila3::Result::FooBar;
+package # Hide from pause
+     TestSchema::Sakila3::Result::FooBar;
    
 use base 'DBIx::Class::Core';
     

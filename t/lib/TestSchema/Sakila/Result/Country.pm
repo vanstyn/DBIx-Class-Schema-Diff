@@ -1,4 +1,5 @@
-package TestSchema::Sakila::Result::Country;
+package # Hide from pause
+     TestSchema::Sakila::Result::Country;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

@@ -1,4 +1,5 @@
-package TestSchema::Sakila::Result::Staff;
+package # Hide from pause
+     TestSchema::Sakila::Result::Staff;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

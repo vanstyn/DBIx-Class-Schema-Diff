@@ -1,4 +1,5 @@
-package TestSchema::Sakila3;
+package # Hide from pause
+     TestSchema::Sakila3;
 
 # Same as TestSchema::Sakila but with misc changes...
 use strict;

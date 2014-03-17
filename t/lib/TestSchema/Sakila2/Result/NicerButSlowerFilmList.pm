@@ -1,4 +1,5 @@
-package TestSchema::Sakila2::Result::NicerButSlowerFilmList;
+package # Hide from pause
+     TestSchema::Sakila2::Result::NicerButSlowerFilmList;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
