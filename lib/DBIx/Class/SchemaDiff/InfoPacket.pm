@@ -33,12 +33,12 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   
   my ($o,$n) = ($self->old_info,$self->new_info);
   
-  return { added   => $n } if ($self->added);
-  return { deleted => $o } if ($self->deleted);
+  return { _event => 'added',   info => $n } if ($self->added);
+  return { _event => 'deleted', info => $o } if ($self->deleted);
   
   my $diff = $self->_info_diff($o,$n) or return undef;
 
-  return { changed => $diff };
+  return { _event => 'changed', info => $diff };
   
 }, init_arg => undef, isa => Maybe[HashRef];
 
@@ -73,6 +73,7 @@ sub _info_diff {
   }
   
   # fill back in any left over, old keys (i.e. weren't in $new):
+  # TODO: track these separately
   $nh->{$_} = $old->{$_} for (keys %old_keys);
 
   return undef unless (keys %$nh > 0);
