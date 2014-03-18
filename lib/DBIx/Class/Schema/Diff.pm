@@ -1,4 +1,4 @@
-package DBIx::Class::SchemaDiff;
+package DBIx::Class::Schema::Diff;
 use strict;
 use warnings;
 
@@ -13,7 +13,7 @@ use Module::Runtime;
 use Try::Tiny;
 use Array::Diff;
 
-use DBIx::Class::SchemaDiff::Source;
+use DBIx::Class::Schema::Diff::Source;
 
 has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
@@ -65,7 +65,7 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   my @sources = grep { !$seen{$_}++ } ($o->sources,$n->sources);
   
   return {
-    map { $_ => DBIx::Class::SchemaDiff::Source->new(
+    map { $_ => DBIx::Class::Schema::Diff::Source->new(
       old_source  => scalar try{$o->source($_)},
       new_source  => scalar try{$n->source($_)},
       schema_diff => $self
@@ -217,13 +217,13 @@ __END__
 
 =head1 NAME
 
-DBIx::Class::SchemaDiff - Simple Diffing of DBIC Schemas
+DBIx::Class::Schema::Diff - Simple Diffing of DBIC Schemas
 
 =head1 SYNOPSIS
 
- use DBIx::Class::SchemaDiff;
+ use DBIx::Class::Schema::Diff;
 
- my $Diff = DBIx::Class::SchemaDiff->new(
+ my $Diff = DBIx::Class::Schema::Diff->new(
    old_schema => 'My::Schema1',
    new_schema => 'My::Schema2'
  );

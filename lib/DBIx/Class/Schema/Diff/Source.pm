@@ -1,4 +1,4 @@
-package DBIx::Class::SchemaDiff::Source;
+package DBIx::Class::Schema::Diff::Source;
 use strict;
 use warnings;
 
@@ -6,7 +6,7 @@ use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
 use Try::Tiny;
 
-use DBIx::Class::SchemaDiff::InfoPacket;
+use DBIx::Class::Schema::Diff::InfoPacket;
 
 has 'old_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::ResultSource'
@@ -17,7 +17,7 @@ has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
 ]];
 
 has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
-  'DBIx::Class::SchemaDiff'
+  'DBIx::Class::Schema::Diff'
 ];
 
 has 'old_class', is => 'ro', lazy => 1, default => sub {
@@ -62,7 +62,7 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
   my @columns = grep {!$seen{$_}++} (try{$o->columns}, try{$n->columns});
   
   return {
-    map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
+    map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
       name        => $_,
       old_info    => $o && $o->has_column($_) ? $o->column_info($_) : undef,
       new_info    => $n && $n->has_column($_) ? $n->column_info($_) : undef,
@@ -83,7 +83,7 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
   my @rels = grep {!$seen{$_}++} (try{$o->relationships},try{$n->relationships});
   
   return {
-    map { $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
+    map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
       name        => $_,
       old_info    => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
       new_info    => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
@@ -110,7 +110,7 @@ has 'unique_constraints', is => 'ro', lazy => 1, default => sub {
     map { 
       my @o_uc_cols = try{$o->unique_constraint_columns($_)};
       my @n_uc_cols = try{$n->unique_constraint_columns($_)};
-      $_ => DBIx::Class::SchemaDiff::InfoPacket->new(
+      $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
         name        => $_,
         old_info    => scalar(@o_uc_cols) > 0 ? { columns => \@o_uc_cols } : undef,
         new_info    => scalar(@n_uc_cols) > 0 ? { columns => \@n_uc_cols } : undef,

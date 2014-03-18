@@ -7,19 +7,19 @@ use lib "$Bin/lib";
 
 use Test::More;
 
-use_ok('DBIx::Class::SchemaDiff');
+use_ok('DBIx::Class::Schema::Diff');
 use_ok('TestSchema::Sakila');
 use_ok('TestSchema::Sakila2');
 use_ok('TestSchema::Sakila3');
 
-sub NewD { DBIx::Class::SchemaDiff->new(@_) } 
+sub NewD { DBIx::Class::Schema::Diff->new(@_) } 
 
 ok(
   NewD(
     old_schema => 'TestSchema::Sakila',
     new_schema => 'TestSchema::Sakila2'
   ),
-  'Instantiate DBIx::Class::SchemaDiff object using class names'
+  'Instantiate DBIx::Class::Schema::Diff object using class names'
 );
 
 is(
@@ -47,7 +47,7 @@ my $s3  = TestSchema::Sakila3->connect(@connect);
 
 ok(
   NewD( old_schema => $s1, new_schema => $s1b ),
-  'Instantiate DBIx::Class::SchemaDiff object using objects'
+  'Instantiate DBIx::Class::Schema::Diff object using objects'
 );
 
 is(

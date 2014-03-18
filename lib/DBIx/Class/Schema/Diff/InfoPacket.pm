@@ -1,4 +1,4 @@
-package DBIx::Class::SchemaDiff::InfoPacket;
+package DBIx::Class::Schema::Diff::InfoPacket;
 use strict;
 use warnings;
 
@@ -10,7 +10,7 @@ has 'old_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 has 'new_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 
 has 'source_diff', required => 1, is => 'ro', isa => InstanceOf[
-  'DBIx::Class::SchemaDiff::Source'
+  'DBIx::Class::Schema::Diff::Source'
 ];
 
 has 'added', is => 'ro', lazy => 1, default => sub { 
