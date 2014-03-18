@@ -180,6 +180,9 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   # TODO: other data points TDB 
   # ...
   
+  # Remove items specified in ignore:
+  $self->_is_ignore($_) and delete $diff->{$_} for (keys %$diff);
+  
   # No changes:
   return undef unless (keys %$diff > 0);
   
@@ -190,6 +193,7 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 
 sub _info_diff { (shift)->schema_diff->_info_diff(@_) }
 sub _is_eq     { (shift)->schema_diff->_is_eq(@_) }
+sub _is_ignore { (shift)->schema_diff->_is_ignore(@_) }
 
 
 

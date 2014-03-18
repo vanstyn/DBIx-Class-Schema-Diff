@@ -6,6 +6,7 @@ use FindBin '$Bin';
 use lib "$Bin/lib";
 
 use Test::More;
+use Test::Exception;
 
 use_ok('DBIx::Class::Schema::Diff');
 use_ok('TestSchema::Sakila');
@@ -372,6 +373,42 @@ is_deeply(
     }
   },
   "Saw expected changes between Sakila3 and Sakila"
+);
+
+
+is_deeply(
+  NewD( 
+    old_schema => $s1, new_schema => $s3, 
+    ignore => [qw(columns relationships unique_constraints)] 
+  )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ],
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    },
+    FooBar => {
+      _event => "added"
+    },
+    SaleByStore => {
+      _event => "deleted"
+    }
+  },
+  "Saw expected changes with 'ignore'"
+);
+
+dies_ok(
+  sub{ NewD(
+    old_schema => $s1, new_schema => $s3, 
+    ignore => ['bad_option']
+  )->diff },
+  "Dies with invalid ignore options"
 );
 
 done_testing;

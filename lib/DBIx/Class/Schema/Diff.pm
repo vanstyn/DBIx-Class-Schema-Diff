@@ -23,6 +23,10 @@ has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
 
+has 'ignore', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
+ columns relationships unique_constraints table_name isa
+)]]];
+
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->old_schema)
 }, init_arg => undef, isa => Str;
@@ -207,6 +211,16 @@ sub _is_eq {
 
   # simple scalar value comparison:
   return (defined $old && defined $new && "$old" eq "$new");
+}
+
+has '_ignore_ndx', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  return { map {$_=>1} @{$self->ignore || []} };
+}, init_arg => undef, isa => HashRef;
+
+sub _is_ignore {
+  my ($self,$name) = @_;
+  return $self->_ignore_ndx->{$name};
 }
 
 
