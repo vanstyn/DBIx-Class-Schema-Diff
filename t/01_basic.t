@@ -403,6 +403,33 @@ is_deeply(
   "Saw expected changes with 'ignore'"
 );
 
+is_deeply(
+  NewD( 
+    old_schema => $s1, new_schema => $s3, 
+    limit => [qw(table_name isa)] 
+  )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ],
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    },
+    FooBar => {
+      _event => "added"
+    },
+    SaleByStore => {
+      _event => "deleted"
+    }
+  },
+  "Saw expected changes with 'limit'"
+);
+
 dies_ok(
   sub{ NewD(
     old_schema => $s1, new_schema => $s3, 

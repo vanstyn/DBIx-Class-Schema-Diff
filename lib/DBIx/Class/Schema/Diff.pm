@@ -27,6 +27,10 @@ has 'ignore', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
  columns relationships unique_constraints table_name isa
 )]]];
 
+has 'limit', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
+ columns relationships unique_constraints table_name isa
+)]]];
+
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->old_schema)
 }, init_arg => undef, isa => Str;
@@ -218,9 +222,17 @@ has '_ignore_ndx', is => 'ro', lazy => 1, default => sub {
   return { map {$_=>1} @{$self->ignore || []} };
 }, init_arg => undef, isa => HashRef;
 
+has '_limit_ndx', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  return { map {$_=>1} @{$self->limit || []} };
+}, init_arg => undef, isa => HashRef;
+
 sub _is_ignore {
   my ($self,$name) = @_;
-  return $self->_ignore_ndx->{$name};
+  return (
+    $self->_ignore_ndx->{$name} ||
+    ($self->limit && ! $self->_limit_ndx->{$name})
+  );
 }
 
 
