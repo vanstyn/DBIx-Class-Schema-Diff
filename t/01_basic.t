@@ -430,12 +430,81 @@ is_deeply(
   "Saw expected changes with 'limit'"
 );
 
+
+is_deeply(
+  NewD( 
+    old_schema => $s1, new_schema => $s3, 
+    limit => [qw(table_name isa)],
+    limit_sources => [qw(Address City)]
+  )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ],
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    }
+  },
+  "Saw expected changes with 'limit' and 'limit_sources'"
+);
+
+is_deeply(
+  NewD( 
+    old_schema => $s1, new_schema => $s3, 
+    ignore => [qw(columns relationships unique_constraints)],
+    ignore_sources => [qw(FooBar SaleByStore)]
+  )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ],
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    }
+  },
+  "Saw expected changes with 'ignore' and 'ignore_sources'"
+);
+
 dies_ok(
   sub{ NewD(
     old_schema => $s1, new_schema => $s3, 
     ignore => ['bad_option']
-  )->diff },
+  ) },
   "Dies with invalid ignore options"
+);
+
+dies_ok(
+  sub{ NewD(
+    old_schema => $s1, new_schema => $s3, 
+    limit => ['bad_option']
+  ) },
+  "Dies with invalid limit options"
+);
+
+dies_ok(
+  sub{ NewD(
+    old_schema => $s1, new_schema => $s3, 
+    ignore_sources => ['BadSourceName']
+  ) },
+  "Dies with invalid ignore_sources"
+);
+
+dies_ok(
+  sub{ NewD(
+    old_schema => $s1, new_schema => $s3, 
+    limit_sources => ['BadSourceName']
+  ) },
+  "Dies with invalid limit_sources"
 );
 
 done_testing;

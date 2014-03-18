@@ -31,6 +31,9 @@ has 'limit', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
  columns relationships unique_constraints table_name isa
 )]]];
 
+has 'ignore_sources', is => 'ro', isa => Maybe[ArrayRef];
+has 'limit_sources', is => 'ro', isa => Maybe[ArrayRef];
+
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->old_schema)
 }, init_arg => undef, isa => Str;
@@ -61,6 +64,10 @@ sub _auto_connect_schema {
   return $class->connect('dbi:SQLite::memory:','','');
 }
 
+sub BUILD {
+  my $self = shift;
+  $self->sources; # <-- initialize
+}
 
 
 has 'sources', is => 'ro', lazy => 1, default => sub {
@@ -72,7 +79,7 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   my %seen = ();
   my @sources = grep { !$seen{$_}++ } ($o->sources,$n->sources);
   
-  return {
+  my $s = {
     map { $_ => DBIx::Class::Schema::Diff::Source->new(
       old_source  => scalar try{$o->source($_)},
       new_source  => scalar try{$n->source($_)},
@@ -80,6 +87,23 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
     ) } @sources 
   };
 
+  my %limit = ();
+  for my $name (@{$self->limit_sources || []}) {
+    die "No such source '$name' specified in 'limit_sources" unless ($s->{$name});
+    $limit{$name} = 1;
+  }
+  
+  for my $name (@{$self->ignore_sources || []}) {
+    die "No such source '$name' specified in 'ignore_sources" unless ($s->{$name});
+    delete $s->{$name};
+  }
+  
+  if(scalar(keys %limit) > 0) {
+    $limit{$_} or delete $s->{$_} for (keys %$s);
+  }
+  
+  return $s;
+  
 }, init_arg => undef, isa => HashRef;
 
 
