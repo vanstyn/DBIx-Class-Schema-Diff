@@ -23,8 +23,13 @@ has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
 
-has 'ignore_sources', is => 'ro', isa => Maybe[ArrayRef];
-has 'limit_sources',  is => 'ro', isa => Maybe[ArrayRef];
+has 'ignore_sources', is => 'ro', isa => Maybe[Map[Str,Bool]], 
+  coerce => \&_coerce_list_hash;
+  
+has 'limit_sources',  is => 'ro', isa => Maybe[Map[Str,Bool]], 
+  coerce => \&_coerce_list_hash;
+
+
 
 
 my @_ignore_limit_attrs = qw(
@@ -75,6 +80,17 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   
   # List of all sources in old, new, or both:
   my @sources = uniq($o->sources,$n->sources);
+  my %src = map {$_=>1} @sources;
+  
+  if($self->limit_sources) {
+    $src{$_} or die "No such source '$_' specified in 'limit_sources" 
+      for (keys %{$self->limit_sources});
+  }
+  
+  if($self->ignore_sources) {
+    $src{$_} or die "No such source '$_' specified in 'ignore_sources" 
+      for (keys %{$self->ignore_sources});
+  }
   
   my $s = {
     map {
@@ -112,23 +128,8 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
       # --
       
       $_ => DBIx::Class::Schema::Diff::Source->new(%opt)
-    } @sources 
+    } grep { ! $self->_is_ignore_source($_) } @sources 
   };
-
-  my %limit = ();
-  for my $name (@{$self->limit_sources || []}) {
-    die "No such source '$name' specified in 'limit_sources" unless ($s->{$name});
-    $limit{$name} = 1;
-  }
-  
-  for my $name (@{$self->ignore_sources || []}) {
-    die "No such source '$name' specified in 'ignore_sources" unless ($s->{$name});
-    delete $s->{$name};
-  }
-  
-  if(scalar(keys %limit) > 0) {
-    $limit{$_} or delete $s->{$_} for (keys %$s);
-  }
   
   return $s;
   
@@ -147,6 +148,14 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   return $diff;
   
 }, init_arg => undef, isa => Maybe[HashRef];
+
+sub _is_ignore_source {
+  my ($self,$name) = @_;
+  return (
+    ($self->ignore_sources && $self->ignore_sources->{$name}) ||
+    ($self->limit_sources && ! $self->limit_sources->{$name})
+  );
+}
 
 sub schema_diff { (shift) }
 

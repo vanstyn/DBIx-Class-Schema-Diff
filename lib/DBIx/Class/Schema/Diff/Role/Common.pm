@@ -9,7 +9,6 @@ use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Array::Diff;
 
-#has 'schema_diff', is => 'ro', lazy => 1, default => sub { (shift) };
 
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->schema_diff->old_schema)
@@ -176,6 +175,7 @@ sub _coerce_ignore_limit {
 }
 
 sub _coerce_list_hash {
+  $_[0] && ! ref($_[0]) ? { $_[0] => 1 } :
   ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
 }
 
