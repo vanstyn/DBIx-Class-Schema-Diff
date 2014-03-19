@@ -9,6 +9,7 @@ our $VERSION = 0.01;
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
 use Scalar::Util qw(blessed);
+use List::MoreUtils qw(uniq);
 use Module::Runtime;
 use Try::Tiny;
 use Array::Diff;
@@ -23,16 +24,17 @@ has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
 
-has 'ignore', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
- columns relationships unique_constraints table_name isa
-)]]];
-
-has 'limit', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
- columns relationships unique_constraints table_name isa
-)]]];
-
 has 'ignore_sources', is => 'ro', isa => Maybe[ArrayRef];
-has 'limit_sources', is => 'ro', isa => Maybe[ArrayRef];
+has 'limit_sources',  is => 'ro', isa => Maybe[ArrayRef];
+
+
+my %_ignore_limit_attrs = (
+  is => 'ro', coerce => \&_coerce_ignore_limit,
+  isa => Maybe[HashRef[ArrayRef]]
+);
+has 'ignore' => %_ignore_limit_attrs;
+has 'limit'  => %_ignore_limit_attrs;
+
 
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->old_schema)
@@ -76,14 +78,15 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_schema,$self->new_schema);
   
   # List of all sources in old, new, or both:
-  my %seen = ();
-  my @sources = grep { !$seen{$_}++ } ($o->sources,$n->sources);
+  my @sources = uniq($o->sources,$n->sources);
   
   my $s = {
     map { $_ => DBIx::Class::Schema::Diff::Source->new(
       old_source  => scalar try{$o->source($_)},
       new_source  => scalar try{$n->source($_)},
-      schema_diff => $self
+      schema_diff => $self,
+      ignore      => $self->_flatten_for($self->ignore,$_),
+      limit       => $self->_flatten_for($self->limit,$_),
     ) } @sources 
   };
 
@@ -241,22 +244,32 @@ sub _is_eq {
   return (defined $old && defined $new && "$old" eq "$new");
 }
 
-has '_ignore_ndx', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return { map {$_=>1} @{$self->ignore || []} };
-}, init_arg => undef, isa => HashRef;
 
-has '_limit_ndx', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return { map {$_=>1} @{$self->limit || []} };
-}, init_arg => undef, isa => HashRef;
 
-sub _is_ignore {
-  my ($self,$name) = @_;
-  return (
-    $self->_ignore_ndx->{$name} ||
-    ($self->limit && ! $self->_limit_ndx->{$name})
+sub _coerce_ignore_limit {
+  ref($_[0]) eq 'ARRAY' ? do {
+    my %h = ();
+    for my $itm (@{$_[0]}) {
+      my ($pre,$val) = split(/\./,$itm,2);
+      if ($val) {
+        push @{$h{$pre}},$val;
+      }
+      else {
+        push @{$h{''}},$pre;
+      }
+    }
+    return \%h;
+  } : $_[0];
+}
+
+sub _flatten_for {
+  my ($self,$hash,$name) = @_;
+  return undef unless ($hash);
+  my @merged = uniq(
+    @{ $hash->{''}    || [] },
+    @{ $hash->{$name} || [] }
   );
+  return scalar(@merged) > 0 ? \@merged : undef;
 }
 
 

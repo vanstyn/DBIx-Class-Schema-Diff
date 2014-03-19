@@ -5,6 +5,7 @@ use warnings;
 use Moo;
 use MooX::Types::MooseLike::Base 0.25 qw(:all);
 use Try::Tiny;
+use List::MoreUtils qw(uniq);
 
 use DBIx::Class::Schema::Diff::InfoPacket;
 
@@ -19,6 +20,14 @@ has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
 has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff'
 ];
+
+has 'ignore', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
+ columns relationships unique_constraints table_name isa
+)]]];
+
+has 'limit', is => 'ro', isa => Maybe[ArrayRef[Enum[qw(
+ columns relationships unique_constraints table_name isa
+)]]];
 
 has 'old_class', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
@@ -58,8 +67,7 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all columns in old, new, or both:
-  my %seen = ();
-  my @columns = grep {!$seen{$_}++} (try{$o->columns}, try{$n->columns});
+  my @columns = uniq(try{$o->columns}, try{$n->columns});
   
   return {
     map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
@@ -79,8 +87,7 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all relationships in old, new, or both:
-  my %seen = ();
-  my @rels = grep {!$seen{$_}++} (try{$o->relationships},try{$n->relationships});
+  my @rels = uniq(try{$o->relationships},try{$n->relationships});
   
   return {
     map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
@@ -100,8 +107,7 @@ has 'unique_constraints', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all unique_constraint_names in old, new, or both:
-  my %seen = ();
-  my @consts = grep {!$seen{$_}++} (
+  my @consts = uniq(
     try{$o->unique_constraint_names},
     try{$n->unique_constraint_names}
   );
@@ -193,8 +199,24 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 
 sub _info_diff { (shift)->schema_diff->_info_diff(@_) }
 sub _is_eq     { (shift)->schema_diff->_is_eq(@_) }
-sub _is_ignore { (shift)->schema_diff->_is_ignore(@_) }
 
+has '_ignore_ndx', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  return { map {$_=>1} @{$self->ignore || []} };
+}, init_arg => undef, isa => HashRef;
+
+has '_limit_ndx', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  return { map {$_=>1} @{$self->limit || []} };
+}, init_arg => undef, isa => HashRef;
+
+sub _is_ignore {
+  my ($self,$name) = @_;
+  return (
+    $self->_ignore_ndx->{$name} ||
+    ($self->limit && ! $self->_limit_ndx->{$name})
+  );
+}
 
 
 1;
