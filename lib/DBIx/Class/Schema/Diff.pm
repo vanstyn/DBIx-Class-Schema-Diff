@@ -7,7 +7,7 @@ use warnings;
 our $VERSION = 0.01;
 
 use Moo;
-use MooX::Types::MooseLike::Base 0.25 qw(:all);
+use Types::Standard qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Module::Runtime;
@@ -280,6 +280,9 @@ sub _is_eq {
 }
 
 
+sub _coerce_list_hash {
+  ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
+}
 
 sub _coerce_ignore_limit {
   ref($_[0]) eq 'ARRAY' ? do {
