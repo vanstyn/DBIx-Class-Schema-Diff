@@ -580,6 +580,101 @@ is_deeply(
 );
 
 
+my $cust_limit2 = {
+  Address => {
+    _event => "changed",
+    isa => [
+      "+Test::DummyClass"
+    ]
+  },
+  City => {
+    _event => "changed",
+    table_name => "city1"
+  },
+  Film => {
+    _event => "changed",
+    columns => {
+      film_id => {
+        _event => "changed",
+        diff => {
+          is_auto_increment => 0
+        }
+      },
+      id => {
+        _event => "added"
+      },
+      rental_rate => {
+        _event => "changed",
+        diff => {
+          size => [
+            6,
+            2
+          ]
+        }
+      }
+    }
+  }
+};
+
+
+is_deeply(
+  NewD(
+    old_schema => $s1, new_schema => $s3, 
+    limit => [qw(Film.columns City.table_name isa)],
+    limit_sources => [qw(Film Address City)],
+    ignore_columns => [qw(rating)],
+  )->diff,
+  $cust_limit2,
+  "Saw expected changes with source-specific 'limit' + ignore_columns"
+);
+
+
+is_deeply(
+  NewD(
+    old_schema => $s1, new_schema => $s3, 
+    limit_columns => [qw(Film.rating Film.id)],
+    limit => [qw(columns isa)]
+  )->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ]
+    },
+    Film => {
+      _event => "changed",
+      columns => {
+        id => {
+          _event => "added"
+        },
+        rating => {
+          _event => "changed",
+          diff => {
+            extra => {
+              list => [
+                "G",
+                "PG",
+                "PG-13",
+                "R",
+                "NC-17",
+                "TV-MA"
+              ]
+            }
+          }
+        }
+      }
+    },
+    FooBar => {
+      _event => "added"
+    },
+    SaleByStore => {
+      _event => "deleted"
+    }
+  },
+  "Saw expected changes with type-specific ignores implied by limits"
+);
+
 done_testing;
 
 

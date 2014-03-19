@@ -28,12 +28,18 @@ has 'ignore_sources', is => 'ro', isa => Maybe[ArrayRef];
 has 'limit_sources',  is => 'ro', isa => Maybe[ArrayRef];
 
 
-my %_ignore_limit_attrs = (
-  is => 'ro', coerce => \&_coerce_ignore_limit,
-  isa => Maybe[HashRef[ArrayRef]]
+my @_ignore_limit_attrs = qw(
+  limit               ignore 
+  limit_columns       ignore_columns
+  limit_relationships ignore_relationships
+  limit_constraints   ignore_constraints
 );
-has 'ignore' => %_ignore_limit_attrs;
-has 'limit'  => %_ignore_limit_attrs;
+
+has $_ => (
+  is  => 'ro', coerce => \&_coerce_ignore_limit,
+  isa => Maybe[HashRef[ArrayRef]]
+) for (@_ignore_limit_attrs);
+
 
 
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
@@ -81,13 +87,42 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   my @sources = uniq($o->sources,$n->sources);
   
   my $s = {
-    map { $_ => DBIx::Class::Schema::Diff::Source->new(
-      old_source  => scalar try{$o->source($_)},
-      new_source  => scalar try{$n->source($_)},
-      schema_diff => $self,
-      ignore      => $self->_flatten_for($self->ignore,$_),
-      limit       => $self->_flatten_for($self->limit,$_),
-    ) } @sources 
+    map {
+      my $name = $_;
+      my %flattened_ignore_limit_opts = map { 
+         $_ => $self->_flatten_for($self->$_ => $name) 
+      } @_ignore_limit_attrs;
+      
+      my %opt = (
+        old_source  => scalar try{$o->source($name)},
+        new_source  => scalar try{$n->source($name)},
+        schema_diff => $self,
+        %flattened_ignore_limit_opts
+      );
+      
+      # -- Add ignores *implied* by source-specific + type-specific 
+      # limits being specified, but ommiting this source
+      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'columns') ] if (
+          $self->limit_columns &&
+        ! $self->limit_columns->{''} &&
+        ! $self->limit_columns->{$name}
+      );
+      
+      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'relationships') ] if (
+          $self->limit_relationships &&
+        ! $self->limit_relationships->{''} &&
+        ! $self->limit_relationships->{$name}
+      );
+      
+      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'unique_constraints') ] if (
+          $self->limit_constraints &&
+        ! $self->limit_constraints->{''} &&
+        ! $self->limit_constraints->{$name}
+      );
+      # --
+      
+      $_ => DBIx::Class::Schema::Diff::Source->new(%opt)
+    } @sources 
   };
 
   my %limit = ();
