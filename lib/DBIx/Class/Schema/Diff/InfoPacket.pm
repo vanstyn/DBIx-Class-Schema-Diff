@@ -3,6 +3,8 @@ use strict;
 use warnings;
 
 use Moo;
+with 'DBIx::Class::Schema::Diff::Role::Common';
+
 use Types::Standard qw(:all);
 
 has 'name', required => 1, is => 'ro', isa => Str;
@@ -12,7 +14,6 @@ has 'new_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 has 'source_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::Source'
 ];
-
 
 has 'ignore', is => 'ro', isa => Maybe[Map[Str,Bool]], coerce => \&_coerce_list_hash;
 has 'limit',  is => 'ro', isa => Maybe[Map[Str,Bool]], coerce => \&_coerce_list_hash;
@@ -45,19 +46,10 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => Maybe[HashRef];
 
 
-sub _info_diff { (shift)->source_diff->schema_diff->_info_diff(@_) }
-
-sub _is_ignore {
-  my ($self,$name) = @_;
-  return (
-    ($self->ignore && $self->ignore->{$name}) ||
-    ($self->limit && ! $self->limit->{$name})
-  );
-}
-
 sub _coerce_list_hash {
   ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
 }
 
+sub schema_diff { (shift)->source_diff->schema_diff }
 
 1;

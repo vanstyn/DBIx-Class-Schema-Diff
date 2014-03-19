@@ -3,6 +3,8 @@ use strict;
 use warnings;
 
 use Moo;
+with 'DBIx::Class::Schema::Diff::Role::Common';
+
 use Types::Standard qw(:all);
 use Try::Tiny;
 use List::MoreUtils qw(uniq);
@@ -212,16 +214,6 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   
 }, init_arg => undef, isa => Maybe[HashRef];
 
-sub _info_diff { (shift)->schema_diff->_info_diff(@_) }
-sub _is_eq     { (shift)->schema_diff->_is_eq(@_) }
-
-sub _is_ignore {
-  my ($self,$name) = @_;
-  return (
-    ($self->ignore && $self->ignore->{$name}) ||
-    ($self->limit && ! $self->limit->{$name})
-  );
-}
 
 sub _coerce_list_hash {
   ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
