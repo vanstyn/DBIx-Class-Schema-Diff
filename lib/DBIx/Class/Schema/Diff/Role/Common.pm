@@ -159,5 +159,24 @@ sub _is_ignore {
   );
 }
 
+sub _coerce_ignore_limit {
+  ref($_[0]) eq 'ARRAY' ? do {
+    my %h = ();
+    for my $itm (@{$_[0]}) {
+      my ($pre,$val) = split(/\./,$itm,2);
+      if ($val) {
+        push @{$h{$pre}},$val;
+      }
+      else {
+        push @{$h{''}},$pre;
+      }
+    }
+    return \%h;
+  } : $_[0];
+}
+
+sub _coerce_list_hash {
+  ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
+}
 
 1;
