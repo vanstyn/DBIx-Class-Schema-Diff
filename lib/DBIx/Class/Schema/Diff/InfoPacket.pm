@@ -11,7 +11,7 @@ has 'name', required => 1, is => 'ro', isa => Str;
 has 'old_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 has 'new_info', required => 1, is => 'ro', isa => Maybe[HashRef];
 
-has 'source_diff', required => 1, is => 'ro', isa => InstanceOf[
+has '_source_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::Source'
 ];
 
@@ -46,6 +46,6 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => Maybe[HashRef];
 
 
-sub schema_diff { (shift)->source_diff->schema_diff }
+sub _schema_diff { (shift)->_source_diff->_schema_diff }
 
 1;

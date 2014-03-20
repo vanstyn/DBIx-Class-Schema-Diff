@@ -19,7 +19,7 @@ has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::ResultSource'
 ]];
 
-has 'schema_diff', required => 1, is => 'ro', isa => InstanceOf[
+has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff'
 ];
 
@@ -85,7 +85,7 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
       name        => $_,
       old_info    => $o && $o->has_column($_) ? $o->column_info($_) : undef,
       new_info    => $n && $n->has_column($_) ? $n->column_info($_) : undef,
-      source_diff => $self,
+      _source_diff => $self,
       limit       => $self->limit_columns,
       ignore      => $self->ignore_columns
     ) } @columns 
@@ -107,7 +107,7 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
       name        => $_,
       old_info    => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
       new_info    => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
-      source_diff => $self,
+      _source_diff => $self,
       limit       => $self->limit_relationships,
       ignore      => $self->ignore_relationships
     ) } @rels
@@ -135,7 +135,7 @@ has 'unique_constraints', is => 'ro', lazy => 1, default => sub {
         name        => $_,
         old_info    => scalar(@o_uc_cols) > 0 ? { columns => \@o_uc_cols } : undef,
         new_info    => scalar(@n_uc_cols) > 0 ? { columns => \@n_uc_cols } : undef,
-        source_diff => $self,
+        _source_diff => $self,
         limit       => $self->limit_constraints,
         ignore      => $self->ignore_constraints
       ) 
@@ -153,8 +153,8 @@ has 'isa_diff', is => 'ro', lazy => 1, default => sub {
   my $n_isa = $n ? mro::get_linear_isa($n) : [];
 
   # Normalize namespaces which match the old/new schema class
-  my $o_class = $self->schema_diff->old_schemaclass;
-  my $n_class = $self->schema_diff->new_schemaclass;
+  my $o_class = $self->_schema_diff->old_schemaclass;
+  my $n_class = $self->_schema_diff->new_schemaclass;
   $_ =~ s/^${n_class}/\*/ for (@$n_isa);
   $_ =~ s/^${o_class}/\*/ for (@$o_isa);
 

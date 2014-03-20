@@ -102,7 +102,7 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
       my %opt = (
         old_source  => scalar try{$o->source($name)},
         new_source  => scalar try{$n->source($name)},
-        schema_diff => $self,
+        _schema_diff => $self,
         %flattened_ignore_limit_opts
       );
       
@@ -157,7 +157,7 @@ sub _is_ignore_source {
   );
 }
 
-sub schema_diff { (shift) }
+sub _schema_diff { (shift) }
 
 1;
 

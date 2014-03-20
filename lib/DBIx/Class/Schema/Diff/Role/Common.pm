@@ -11,11 +11,11 @@ use Array::Diff;
 
 
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
-  blessed((shift)->schema_diff->old_schema)
+  blessed((shift)->_schema_diff->old_schema)
 }, init_arg => undef, isa => Str;
 
 has 'new_schemaclass', is => 'ro', lazy => 1, default => sub { 
-  blessed((shift)->schema_diff->new_schema)
+  blessed((shift)->_schema_diff->new_schema)
 }, init_arg => undef, isa => Str;
 
 # Adapted from Hash::Diff, but heavily modified and specific to
