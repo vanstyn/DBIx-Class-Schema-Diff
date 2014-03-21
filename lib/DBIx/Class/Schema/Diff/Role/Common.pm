@@ -179,4 +179,68 @@ sub _coerce_list_hash {
   ref($_[0]) eq 'ARRAY' ? { map {$_=>1} @{$_[0]} } : $_[0];
 }
 
+sub _coerce_2level_list_hash {
+  my $val = shift;
+  $val = [$val] if ($val && !ref $val);
+  ref($val) eq 'ARRAY' ? do {
+    my %h = ();
+    for my $itm (@{$val}) {
+      my ($pre,$val) = split(/\./,$itm,2);
+      if ($val) {
+        push @{$h{$pre}},$val;
+      }
+      else {
+        push @{$h{''}},$pre;
+      }
+    }
+    return \%h;
+  } : $val;
+}
+
+sub _coerce_deep_list_hash {
+  my $val = shift;
+  $val = [$val] if ($val && !ref $val);
+  ref($val) eq 'ARRAY' ? do {
+    my %h = ();
+    for my $itm (@{$val}) {
+      next unless ($itm);
+      my @chain = split(/\./,$itm);
+      my $last = pop @chain or next;
+      my $ev = scalar(@chain) > 0 ? join('',
+        map { '{"'.$_.'"}' } @chain
+      ) : '{""}';
+      
+      my $ref;
+      eval join('','$h',$ev,'||=[]');
+      eval join('','$ref=$h',$ev);
+      
+      push @$ref,$last;
+    }
+    return \%h;
+  } : $val;
+}
+
+# turns qw(some.deep.foo some.deep.bar) into:
+# { some => { deep => { foo => {}, bar => {} }
+sub _coerce_to_deep_hash {
+  my $val = shift;
+  $val = [$val] if ($val && !ref $val);
+  ref($val) eq 'ARRAY' ? do {
+    my %h = ();
+    for my $itm (@{$val}) {
+      next unless ($itm);
+      my $hpath = join('', map { '{"'.$_.'"}' } split(/\./,$itm));
+      eval join('','$h',$hpath,'//={}');
+    }
+    return \%h;
+  } : $val;
+}
+
+
+
+sub _coerce_schema_diff {
+  blessed $_[0] ? $_[0] : DBIx::Class::Schema::Diff::Schema->new($_[0]);
+}
+
+
 1;

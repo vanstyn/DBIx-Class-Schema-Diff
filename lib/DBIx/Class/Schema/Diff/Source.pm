@@ -20,7 +20,7 @@ has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
 ]];
 
 has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
-  'DBIx::Class::Schema::Diff'
+  'DBIx::Class::Schema::Diff::Schema'
 ];
 
 has 'ignore', is => 'ro', isa => Maybe[Map[Enum[qw(
