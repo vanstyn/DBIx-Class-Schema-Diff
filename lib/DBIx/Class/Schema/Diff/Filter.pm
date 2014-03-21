@@ -74,6 +74,7 @@ sub filter {
       $self->_is_skip( source_events => $h->{_event})
     );
     $newd->{$s_name} = $self->source_filter( $s_name => $h );
+    delete $newd->{$s_name} unless (defined $newd->{$s_name});
   }
   
   return (keys %$newd > 0) ? $newd : undef;

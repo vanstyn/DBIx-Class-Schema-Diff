@@ -15,6 +15,23 @@ my $Diff =  DBIx::Class::Schema::Diff->new(
   new_schema => 'TestSchema::Sakila3'
 );
 
+is_deeply(
+  $Diff->diff,
+  $Diff->filter()->diff,
+  'Empty filter matches diff'
+);
+is_deeply(
+  $Diff->diff,
+  $Diff->filter_out()->diff,
+  'Empty filter_out matches diff'
+);
+is_deeply(
+  $Diff->diff,
+  $Diff->filter->filter->filter_out->filter->filter_out->diff,
+  'Chained empty filters matches diff'
+);
+
+
 
 my $added_sources_expected_diff = { FooBar => { _event => "added" } };
 is_deeply(
@@ -36,12 +53,18 @@ is_deeply(
 );
 
 
+my $only_isa_expected_diff = {
+  Address => {
+    isa => [
+      "+Test::DummyClass"
+    ]
+  }
+};
 is_deeply(
-  $Diff->diff,
-  $Diff->filter()->diff,
-  'Empty filter matches diff'
+  $Diff->filter( types => 'isa' )->diff,
+  $only_isa_expected_diff,
+  'filter all but "isa"'
 );
-
 
 
 done_testing;
@@ -52,7 +75,7 @@ done_testing;
 #
 #use Data::Dumper::Concise;
 #print STDERR "\n\n" . Dumper(
-#  $Diff->filter_out( 
-#    source_events => [qw(deleted changed)] 
+#  $Diff->filter(
+#    types => 'isa'
 #  )->diff
 #) . "\n\n";
