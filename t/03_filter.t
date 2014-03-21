@@ -82,6 +82,26 @@ is_deeply(
 
 done_testing;
 
+#### -------------
+###  API idea: make any of the following str filter args match *at least*
+###  a change to the value 'unsigned' within the key 'extra' within the 
+###  column_info of 'rental_rate' with the 'Film' source
+##
+##                      'column_info'
+##                      'column_info.extra'
+##                      'column_info.extra.unsigned'
+##          'rental_rate/column_info'
+##          'rental_rate/column_info.extra'
+##          'rental_rate/column_info.extra.unsigned'
+##     'Film:rental_rate/column_info'
+##     'Film:rental_rate/column_info.extra'
+##     'Film:rental_rate/column_info.extra.unsigned'
+##                 'Film:column_info'
+##                 'Film:column_info.extra'
+##                 'Film:column_info.extra.unsigned'
+##     
+### -------------
+
 
 
 # -- for debugging:
@@ -89,6 +109,6 @@ done_testing;
 #use Data::Dumper::Concise;
 #print STDERR "\n\n" . Dumper(
 #  $Diff->filter(
-#    types => 'isa'
+#    'column_info.extra'
 #  )->diff
 #) . "\n\n";
