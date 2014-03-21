@@ -14,6 +14,7 @@ use Module::Runtime;
 use Try::Tiny;
 
 use DBIx::Class::Schema::Diff::Schema;
+use DBIx::Class::Schema::Diff::Filter;
 
 has '_schema_diff', required => 1, is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema::Diff::Schema'
@@ -31,6 +32,24 @@ around BUILDARGS => sub {
   return $opt{_schema_diff} ? $self->$orig(%opt) : $self->$orig( _schema_diff => \%opt );
 };
 
+
+sub filter {
+  my ($self,@args) = @_;
+  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
+  
+  my $Filter = DBIx::Class::Schema::Diff::Filter->new(\%opt);
+  
+  return __PACKAGE__->new({
+    _schema_diff => $self->_schema_diff,
+    diff         => $Filter->filter( $self->diff )
+  });
+}
+
+sub filter_out {
+  my ($self,@args) = @_;
+  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
+  return $self->filter( %opt, mode => 'ignore' );
+}
 
 1;
 

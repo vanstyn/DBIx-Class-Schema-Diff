@@ -22,7 +22,8 @@ my @types = qw(
 has 'types', is => 'ro', isa => Maybe[Map[Enum[@types],Bool]], 
   coerce => \&_coerce_list_hash;
 
-for my $attr ('sources',@types) {
+my @attrs = ('sources',@types);
+for my $attr (@attrs) {
   has $attr => ( 
     is => 'ro', isa => Maybe[Map[Str,Bool]],
     coerce => \&_coerce_list_hash
@@ -34,10 +35,6 @@ for my $attr ('sources',@types) {
     coerce => \&_coerce_list_hash
   );
 }
-sub columns_events       { (shift)->column_events }
-sub relationships_events { (shift)->relationship_events }
-sub constraints_events   { (shift)->constraint_events }
-
 
 has 'column_names', is => 'ro', isa => Maybe[HashRef], 
   coerce => \&_coerce_list_hash;
@@ -54,6 +51,13 @@ has 'column_info', is => 'ro', isa => Maybe[Map[Str,Bool]],
 has 'relationship_info', is => 'ro', isa => Maybe[Map[Str,Bool]], 
   coerce => \&_coerce_to_deep_hash;
 
+# Plural form method aliases:
+sub columns_events       { (shift)->column_events }
+sub relationships_events { (shift)->relationship_events }
+sub constraints_events   { (shift)->constraint_events }
+sub columns_names        { (shift)->column_names }
+sub relationships_names  { (shift)->relationship_names }
+sub constraints_names    { (shift)->constraint_names }
 
 
 sub filter {
@@ -96,13 +100,13 @@ sub source_filter {
 
 sub _info_filter {
   my ($self, $type, $s_name, $items) = @_;
-  return undef unless ($data);
+  return undef unless ($items);
 
   my $new_items = {};
 
-  for my $name (%$items) {
+  for my $name (keys %$items) {
     next if ($self->_is_skip( $type.'_events' => $items->{$name}{_event}));
-    next if ($self->_is_skip( $type.'_names'  => $name );
+    next if ($self->_is_skip( $type.'_names'  => $name ));
     if($items->{$name}{_event} eq 'changed') {
       my $meth = $type.'_info';
       my $new_diff = $self->can($meth) ? $self->_deep_hash_filter(
@@ -124,7 +128,7 @@ sub _info_filter {
 }
 
 sub _deep_hash_filter {
-  my ($self, $check, $hash) = @_
+  my ($self, $check, $hash) = @_;
   
   my $new_hash = {};
   for my $k (keys %$hash) {
