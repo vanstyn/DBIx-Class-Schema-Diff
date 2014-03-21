@@ -21,7 +21,7 @@ sub NewD { DBIx::Class::Schema::Diff->new(@_) }
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    ignore => [qw(columns relationships unique_constraints)] 
+    ignore => [qw(columns relationships constraints)] 
   )->diff,
   {
     Address => {
@@ -98,7 +98,7 @@ is_deeply(
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    ignore => [qw(columns relationships unique_constraints)],
+    ignore => [qw(columns relationships constraints)],
     ignore_sources => [qw(FooBar SaleByStore)]
   )->diff,
   {

@@ -152,7 +152,7 @@ is_deeply(
     City => {
       _event => "changed",
       table_name => "city1",
-      unique_constraints => {
+      constraints => {
         primary => {
           _event => "deleted"
         }
@@ -195,7 +195,7 @@ is_deeply(
           }
         }
       },
-      unique_constraints => {
+      constraints => {
         primary => {
           _event => "changed",
           diff => {
@@ -227,7 +227,7 @@ is_deeply(
           _event => "deleted"
         }
       },
-      unique_constraints => {
+      constraints => {
         rental_date => {
           _event => "deleted"
         },
@@ -241,7 +241,7 @@ is_deeply(
     },
     Store => {
       _event => "changed",
-      unique_constraints => {
+      constraints => {
         idx_unique_store_manager => {
           _event => "added"
         }
@@ -277,7 +277,7 @@ is_deeply(
     City => {
       _event => "changed",
       table_name => "city",
-      unique_constraints => {
+      constraints => {
         primary => {
           _event => "added"
         }
@@ -319,7 +319,7 @@ is_deeply(
           }
         }
       },
-      unique_constraints => {
+      constraints => {
         primary => {
           _event => "changed",
           diff => {
@@ -351,7 +351,7 @@ is_deeply(
           _event => "added"
         }
       },
-      unique_constraints => {
+      constraints => {
         rental_date => {
           _event => "added"
         },
@@ -365,7 +365,7 @@ is_deeply(
     },
     Store => {
       _event => "changed",
-      unique_constraints => {
+      constraints => {
         idx_unique_store_manager => {
           _event => "deleted"
         }

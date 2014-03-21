@@ -24,11 +24,11 @@ has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
 ];
 
 has 'ignore', is => 'ro', isa => Maybe[Map[Enum[qw(
- columns relationships unique_constraints table_name isa
+ columns relationships constraints table_name isa
 )],Bool]], coerce => \&_coerce_list_hash;
 
 has 'limit', is => 'ro', isa => Maybe[Map[Enum[qw(
- columns relationships unique_constraints table_name isa
+ columns relationships constraints table_name isa
 )],Bool]], coerce => \&_coerce_list_hash;
 
 
@@ -116,7 +116,7 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => HashRef;
 
 
-has 'unique_constraints', is => 'ro', lazy => 1, default => sub { 
+has 'constraints', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
   
   my ($o,$n) = ($self->old_source,$self->new_source);
@@ -189,10 +189,10 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   } values %{$self->relationships} };
   delete $diff->{relationships} unless (keys %{$diff->{relationships}} > 0);
   
-  $diff->{unique_constraints} = { map {
+  $diff->{constraints} = { map {
     $_->diff ? ($_->name => $_->diff) : ()
-  } values %{$self->unique_constraints} };
-  delete $diff->{unique_constraints} unless (keys %{$diff->{unique_constraints}} > 0);
+  } values %{$self->constraints} };
+  delete $diff->{constraints} unless (keys %{$diff->{constraints}} > 0);
   
   my $o_tbl = try{$self->old_source->from};
   my $n_tbl = try{$self->new_source->from};

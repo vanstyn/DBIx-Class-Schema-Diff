@@ -120,7 +120,7 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
         ! $self->limit_relationships->{$name}
       );
       
-      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'unique_constraints') ] if (
+      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'constraints') ] if (
           $self->limit_constraints &&
         ! $self->limit_constraints->{''} &&
         ! $self->limit_constraints->{$name}
