@@ -9,6 +9,13 @@ use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Array::Diff;
 
+sub _types_list { qw(
+ columns
+ relationships
+ constraints
+ table_name
+ isa
+)}
 
 has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
   blessed((shift)->_schema_diff->old_schema)
@@ -236,6 +243,20 @@ sub _coerce_to_deep_hash {
   } : $val;
 }
 
+sub _boolify_deep_hash_ends {
+  my $h = shift;
+  return $h unless ($h && ref($h) eq 'HASH');
+  return 1 unless (keys %$h > 0);
+  return { map { $_ => &_boolify_deep_hash_ends($h->{$_}) } keys %$h };
+}
+
+# turns qw(some.deep.foo some.deep.bar) into:
+# { some => { deep => { foo => 1, bar => 1 }
+sub _coerce_to_deep_hash_bool {
+  my $h = &_coerce_to_deep_hash(shift);
+  return $h && ref($h) eq 'HASH' && scalar(keys %$h) > 0 ?
+    &_boolify_deep_hash_ends($h) : $h;
+}
 
 
 sub _coerce_schema_diff {

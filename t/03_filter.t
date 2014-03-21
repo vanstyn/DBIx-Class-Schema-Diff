@@ -35,18 +35,18 @@ is_deeply(
 
 my $added_sources_expected_diff = { FooBar => { _event => "added" } };
 is_deeply(
-  $Diff->filter( source_events => 'added' )->diff,
+  $Diff->filter({ source_events => 'added' })->diff,
   $added_sources_expected_diff,
   'filter "added" source_events'
 );
 is_deeply(
-  $Diff->filter_out( source_events => [qw(deleted changed)] )->diff,
+  $Diff->filter_out({ source_events => [qw(deleted changed)] })->diff,
   $added_sources_expected_diff,
   'filter_out "deleted" and "changed" source_events'
 );
 is_deeply(
-  $Diff->filter_out( source_events => 'deleted' )
-       ->filter_out( source_events => { changed => 1 } )
+  $Diff->filter_out({ source_events => 'deleted' })
+       ->filter_out({ source_events => { changed => 1 } })
        ->diff,
   $added_sources_expected_diff,
   'filter_out "deleted" and "changed" source_events via chaining'
@@ -61,9 +61,14 @@ my $only_isa_expected_diff = {
   }
 };
 is_deeply(
-  $Diff->filter( types => 'isa' )->diff,
+  $Diff->filter({ types => 'isa' })->diff,
   $only_isa_expected_diff,
   'filter all but "isa"'
+);
+is_deeply(
+  $Diff->filter('isa')->diff,
+  $only_isa_expected_diff,
+  'filter all but "isa" with string arg'
 );
 
 

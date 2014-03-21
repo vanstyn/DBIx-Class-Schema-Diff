@@ -11,14 +11,7 @@ use Types::Standard qw(:all);
 
 has 'mode', is => 'ro', isa => Enum[qw(limit ignore)], default => sub{'limit'};
 
-my @types = qw(
- columns
- relationships
- constraints
- table_name
- isa
-);
-
+my @types = &_types_list;
 has 'types', is => 'ro', isa => Maybe[Map[Enum[@types],Bool]], 
   coerce => \&_coerce_list_hash;
 

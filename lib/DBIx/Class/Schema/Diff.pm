@@ -32,12 +32,11 @@ around BUILDARGS => sub {
   return $opt{_schema_diff} ? $self->$orig(%opt) : $self->$orig( _schema_diff => \%opt );
 };
 
-
 sub filter {
   my ($self,@args) = @_;
-  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
+  my $params = $self->_coerce_filter_args(@args);
   
-  my $Filter = DBIx::Class::Schema::Diff::Filter->new(\%opt);
+  my $Filter = DBIx::Class::Schema::Diff::Filter->new( $params) ;
   
   return __PACKAGE__->new({
     _schema_diff => $self->_schema_diff,
@@ -47,9 +46,23 @@ sub filter {
 
 sub filter_out {
   my ($self,@args) = @_;
-  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
-  return $self->filter( %opt, mode => 'ignore' );
+  my $params = $self->_coerce_filter_args(@args);
+  $params->{mode} = 'ignore';
+  return $self->filter( $params );
 }
+
+sub _coerce_filter_args {
+  my ($self,@args) = @_;
+  my $params = $args[0];
+  unless (ref($args[0]) eq 'HASH') {
+    # Easy "types" as string args:
+    my %t = map {$_=>1} &_types_list;
+    @args = map { $t{$_} ? "types.$_" : $_ } @args;
+    $params = &_coerce_to_deep_hash_bool(\@args);
+  }
+  return $params;
+}
+
 
 1;
 
