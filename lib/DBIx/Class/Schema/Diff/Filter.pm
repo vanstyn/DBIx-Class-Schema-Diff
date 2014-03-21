@@ -68,6 +68,14 @@ sub filter {
     );
     $newd->{$s_name} = $self->source_filter( $s_name => $h );
     delete $newd->{$s_name} unless (defined $newd->{$s_name});
+    
+    # Strip if the event is 'changed' but the diff data has been stripped
+    delete $newd->{$s_name} if (
+      $newd->{$s_name} && 
+      $newd->{$s_name}{_event} &&
+      $newd->{$s_name}{_event} eq 'changed' &&
+      keys (%{$newd->{$s_name}}) == 1
+    );
   }
   
   return (keys %$newd > 0) ? $newd : undef;
@@ -80,7 +88,7 @@ sub source_filter {
   
   my $newd = {};
   for my $type (keys %$diff) {
-    next if ($self->_is_skip( types => $type ));
+    next if ($type ne '_event' && $self->_is_skip( types => $type ));
     my $val = $diff->{$type};
     if($type eq 'columns' || $type eq 'relationships' || $type eq 'constraints') {
       $newd->{$type} = $self->_info_filter( $type, $s_name => $val );

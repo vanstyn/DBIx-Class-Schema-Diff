@@ -55,6 +55,7 @@ is_deeply(
 
 my $only_isa_expected_diff = {
   Address => {
+    _event => "changed",
     isa => [
       "+Test::DummyClass"
     ]
@@ -69,6 +70,13 @@ is_deeply(
   $Diff->filter('isa')->diff,
   $only_isa_expected_diff,
   'filter all but "isa" with string arg'
+);
+is_deeply(
+  $Diff->filter_out(qw(columns relationships constraints table_name))
+    ->filter('source_events.changed')
+    ->diff,
+  $only_isa_expected_diff,
+  'filter_out all but "isa" changes with string args'
 );
 
 
