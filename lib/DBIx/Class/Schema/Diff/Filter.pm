@@ -58,6 +58,8 @@ sub constraints_events   { (shift)->constraint_events }
 sub columns_names        { (shift)->column_names }
 sub relationships_names  { (shift)->relationship_names }
 sub constraints_names    { (shift)->constraint_names }
+sub columns_info         { (shift)->column_info }
+sub relationships_info   { (shift)->relationship_info }
 
 
 sub filter {
@@ -109,14 +111,22 @@ sub _info_filter {
     next if ($self->_is_skip( $type.'_names'  => $name ));
     if($items->{$name}{_event} eq 'changed') {
       my $meth = $type.'_info';
-      my $new_diff = $self->can($meth) ? $self->_deep_hash_filter(
-        $self->$meth, $items->{$name}{diff}
-      ) : undef;
-      next unless ($new_diff);
-      $new_items->{$name} = {
-        _event => 'changed',
-        diff   => $new_diff
-      };
+      my $check = $self->can($meth) ? $self->$meth : undef;
+      
+      if($check) {
+        my $new_diff = $check ? $self->_deep_hash_filter(
+          $check, $items->{$name}{diff}
+        ) : undef;
+        next unless ($new_diff);
+        $new_items->{$name} = {
+          _event => 'changed',
+          diff   => $new_diff
+        };
+      }
+      else {
+        # Allow through as-is:
+        $new_items->{$name} = $items->{$name};
+      }
     }
     else {
       # Allow through as-is:

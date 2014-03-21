@@ -15,6 +15,7 @@ my $Diff =  DBIx::Class::Schema::Diff->new(
   new_schema => 'TestSchema::Sakila3'
 );
 
+
 my $added_sources_expected_diff = { FooBar => { _event => "added" } };
 is_deeply(
   $Diff->filter( source_events => 'added' )->diff,
@@ -34,14 +35,24 @@ is_deeply(
   'filter_out "deleted" and "changed" source_events via chaining'
 );
 
+
+is_deeply(
+  $Diff->diff,
+  $Diff->filter()->diff,
+  'Empty filter matches diff'
+);
+
+
+
 done_testing;
+
 
 
 # -- for debugging:
 #
 #use Data::Dumper::Concise;
 #print STDERR "\n\n" . Dumper(
-#  $Diff->filter(
-#    source_events => 'added'
+#  $Diff->filter_out( 
+#    source_events => [qw(deleted changed)] 
 #  )->diff
 #) . "\n\n";
