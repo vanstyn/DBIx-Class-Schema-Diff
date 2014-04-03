@@ -352,6 +352,43 @@ is_deeply(
 );
 
 is_deeply(
+  $Diff->filter('FilmCategory:columns/last_update')->diff,
+  {
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    }
+  },
+  "Filter to specific 'last_update' (column of FilmCategory)"
+);
+
+is_deeply(
+  $Diff->filter('columns/last_update')->diff,
+  {
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    }
+  },
+  "Filter to any column named 'last_update'"
+);
+
+
+is_deeply(
   $Diff->filter(qw(constraints relationships FooBar last_update))
    ->filter_out(qw(staffs rental_date1 customer))
    ->filter_out({ events => 'deleted' })
