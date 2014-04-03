@@ -333,59 +333,64 @@ is_deeply(
   "Complex chained filter/filter_out combo (2)"
 );
 
-#is_deeply(
-#  $Diff->filter({ types => 'isa' })->diff,
-#  $only_isa_expected_diff,
-#  'filter all but "isa"'
-#);
-#is_deeply(
-#  $Diff->filter('isa')->diff,
-#  $only_isa_expected_diff,
-#  'filter all but "isa" with string arg'
-#);
-#is_deeply(
-#  $Diff->filter_out(qw(columns relationships constraints table_name))
-#    ->filter('source_events.changed')
-#    ->diff,
-#  $only_isa_expected_diff,
-#  'filter_out all but "isa" changes with string args'
-#);
-#
+is_deeply(
+  $Diff->filter('last_update')->diff,
+  {
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    }
+  },
+  "Filter the dynamic keyword 'last_update'"
+);
+
+is_deeply(
+  $Diff->filter(qw(constraints relationships FooBar last_update))
+   ->filter_out(qw(staffs rental_date1 customer))
+   ->filter_out({ events => 'deleted' })
+   ->filter_out('Film')
+   ->diff,
+   {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        }
+      }
+    },
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    },
+    FooBar => {
+      _event => "added"
+    },
+    Store => {
+      _event => "changed",
+      constraints => {
+        idx_unique_store_manager => {
+          _event => "added"
+        }
+      }
+    }
+  },
+  "Complex chained filter/filter_out combo (3)"
+);
+
 
 done_testing;
-
-#### -------------
-###  API idea: make any of the following str filter args match *at least*
-###  a change to the value 'unsigned' within the key 'extra' within the 
-###  column_info of 'rental_rate' with the 'Film' source
-##
-##                      'column_info'
-##                      'column_info.extra'
-##                      'column_info.extra.unsigned'
-##          'rental_rate/column_info'
-##          'rental_rate/column_info.extra'
-##          'rental_rate/column_info.extra.unsigned'
-##     'Film:rental_rate/column_info'
-##     'Film:rental_rate/column_info.extra'
-##     'Film:rental_rate/column_info.extra.unsigned'
-##                 'Film:column_info'
-##                 'Film:column_info.extra'
-##                 'Film:column_info.extra.unsigned'
-##     
-##  OR:
-##
-##     'Film:columns/rental_rate'
-##     'Film:columns/rental_rate.extra'
-##     'Film:columns/rental_rate.extra.unsigned'
-##          'columns/rental_rate'
-##          'columns/rental_rate.extra'
-##          'columns/rental_rate.extra.unsigned'
-##                  'rental_rate'
-##                  'rental_rate.extra'
-##                  'rental_rate.extra.unsigned'
-##                            '*.extra'
-##                            '*.extra.unsigned'
-##             'Film:rental_rate'
-##             'Film:rental_rate.extra'
-##             'Film:rental_rate.extra.unsigned'
-### -------------

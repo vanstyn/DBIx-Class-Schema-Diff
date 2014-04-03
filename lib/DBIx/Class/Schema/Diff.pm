@@ -63,11 +63,21 @@ sub filter {
   my $params = $self->_coerce_filter_args(@args);
   
   my $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
-  my $diff   = $self->diff;
+  my $diff   = $Filter->filter( $self->diff );
+  
+  # Make a second pass, using the actual matched paths to filter out
+  # the intermediate paths that didn't actually match anything:
+  if($Filter->mode eq 'limit') {
+    $params->{match} = $Filter->match->clone->reset->load( map {
+      $Filter->match->path_to_composit_key(@$_)
+    } @{$Filter->matched_paths} );
+    $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
+    $diff   = $Filter->filter( $diff );
+  }
   
   return __PACKAGE__->new({
     _schema_diff => $self->_schema_diff,
-    diff         => $Filter->filter( $diff )
+    diff         => $diff
   });
 }
 

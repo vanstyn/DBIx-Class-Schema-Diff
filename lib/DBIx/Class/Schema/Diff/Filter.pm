@@ -23,6 +23,7 @@ has 'empty_match', is => 'ro', lazy => 1, default => sub {
   return (scalar(keys %{$self->match->Data}) > 0) ? 0 : 1;
 }, init_arg => undef, isa => Bool;
 
+has 'matched_paths', is => 'ro', init_arg => undef, default => sub {[]};
 
 sub filter {
   my ($self, $diff) = @_;
@@ -45,13 +46,6 @@ sub filter {
       $newd->{$s_name}{_event} &&
       $newd->{$s_name}{_event} eq 'changed' &&
       keys (%{$newd->{$s_name}}) == 1
-    );
-    
-    delete $newd->{$s_name} if (
-      exists $newd->{$s_name} &&
-      $self->change_only_source($s_name) &&
-      $newd->{$s_name}{_event} &&
-      $newd->{$s_name}{_event} ne 'changed'
     );
   }
   
@@ -95,7 +89,7 @@ sub _info_filter {
     
       my $check = $self->match->lookup_path($s_name, $type, $name);
       
-      if($check) {
+      if($check && ref($check) eq 'HASH') {
         my $new_diff = $check ? $self->_deep_hash_filter(
           $check, $items->{$name}{diff}
         ) : undef;
@@ -107,12 +101,13 @@ sub _info_filter {
       }
       else {
         # Allow through as-is:
-        $new_items->{$name} = $items->{$name};
+        $new_items->{$name} = $items->{$name};# if ($check);
       }
     }
     else {
       # Allow through as-is:
       $new_items->{$name} = $items->{$name};
+        #if($self->match->lookup_leaf_path($s_name, $type, $name));
     }
   }
 
@@ -156,7 +151,7 @@ sub _is_skip {
 sub skip_source {
   my ($self, $s_name) = @_;
   my $HL = $self->match or return 0;
-  my $set = $HL->lookup_path($s_name) || 0;
+  my $set = $self->test_path($s_name) || 0;
   
   if($self->mode eq 'limit') {
     return 0 if ($self->empty_match);
@@ -170,12 +165,12 @@ sub skip_source {
 sub skip_type {
   my ($self, $s_name, $type) = @_;
   my $HL = $self->match or return 0;
-  my $set = $HL->lookup_path($s_name,$type);
+  my $set = $self->test_path($s_name,$type);
   
   if($self->mode eq 'limit') {
     return 0 if ($self->empty_match);
     # If this source/type is set, OR if the entire source is included:
-    return $set || $HL->lookup_leaf_path($s_name) ? 0 : 1;
+    return $set || $self->test_leaf_path($s_name) ? 0 : 1;
   }
   else {
     return $set && ! ref($set) ? 1 : 0;
@@ -185,28 +180,30 @@ sub skip_type {
 sub skip_type_id {
   my ($self, $s_name, $type, $id) = @_;
   my $HL = $self->match or return 0;
-  my $set = $HL->lookup_path($s_name,$type,$id);
+  my $set = $self->test_path($s_name,$type,$id);
   
   if($self->mode eq 'limit') {
     return 0 if ($self->empty_match);
     # If this source/type is set, OR if the entire source or source/type is included:
     return $set
-      || $HL->lookup_path($s_name)
-      || $HL->lookup_leaf_path($s_name,$type) ? 0 : 1;
+      || $self->test_path($s_name)
+      || $self->test_leaf_path($s_name,$type) ? 0 : 1;
   }
   else {
     return $set && ! ref($set) ? 1 : 0;
   }
 }
 
-# If the source is only defined as a ref (i.e. intermediate path)
-# then we will only consider changed, not added/deleted
-sub change_only_source {
-  my ($self, $s_name) = @_;
-  my $HL = $self->match or return 0;
-  my $set = $HL->lookup_path($s_name);
-  return $self->mode eq 'limit' && $set && ref $set ? 1 : 0;
+sub test_path {
+  my ($self, @path) = @_;
+  return $self->test_leaf_path(@path) || $self->match->lookup_path(@path);
 }
 
+sub test_leaf_path {
+  my ($self, @path) = @_;
+  my $ret = $self->match->lookup_leaf_path(@path);
+  push @{$self->matched_paths}, \@path if ($ret);
+  return $ret;
+}
 
 1;
