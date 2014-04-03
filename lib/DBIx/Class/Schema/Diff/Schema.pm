@@ -72,6 +72,14 @@ sub BUILD {
   $self->sources; # <-- initialize
 }
 
+sub all_source_names {
+  my $self = shift;
+  
+  my ($o,$n) = ($self->old_schema,$self->new_schema);
+  
+  # List of all sources in old, new, or both:
+  return uniq($o->sources,$n->sources);
+}
 
 has 'sources', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
@@ -79,7 +87,7 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_schema,$self->new_schema);
   
   # List of all sources in old, new, or both:
-  my @sources = uniq($o->sources,$n->sources);
+  my @sources = $self->all_source_names;
   my %src = map {$_=>1} @sources;
   
   if($self->limit_sources) {

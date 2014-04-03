@@ -13,17 +13,41 @@ use Types::Standard qw(:all);
 use Module::Runtime;
 use Try::Tiny;
 use List::Util;
+use Hash::Layout;
 
 use DBIx::Class::Schema::Diff::Schema;
 use DBIx::Class::Schema::Diff::Filter;
 
-has '_schema_diff', required => 1, is => 'ro', isa => Maybe[InstanceOf[
+has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::Schema'
-]], coerce => \&_coerce_schema_diff;
+], coerce => \&_coerce_schema_diff;
 
 has 'diff', is => 'ro', lazy => 1, default => sub {
   (shift)->_schema_diff->diff
 }, isa => Maybe[HashRef];
+
+has 'MatchLayout', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  
+  Hash::Layout->new({
+    default_key   => '*',
+    default_value => 1,
+    levels => [
+      { 
+        name => 'source', 
+        delimiter => ':',
+        registered_keys => [$self->_schema_diff->all_source_names]
+      },{ 
+        name => 'type', 
+        delimiter => '/',
+        registered_keys => [&_types_list]
+      },{ 
+        name => 'id', 
+      }
+    ]
+  });
+
+}, init_arg => undef, isa => InstanceOf['Hash::Layout'];
 
 
 around BUILDARGS => sub {
@@ -33,53 +57,13 @@ around BUILDARGS => sub {
   return $opt{_schema_diff} ? $self->$orig(%opt) : $self->$orig( _schema_diff => \%opt );
 };
 
+
 sub filter {
   my ($self,@args) = @_;
-  my $p = $self->_coerce_filter_args(@args);
+  my $params = $self->_coerce_filter_args(@args);
   
-  my $diff = $self->diff;
-  
-  # Apply options that are implied by other options:
-  
-  # -- Allow bool types to be used to specify names
-  $p->{types} = &_coerce_to_deep_hash_bool($p->{types}) || {};
-  if (ref $p->{types}{columns}) {
-    $p->{column_names} //= $p->{types}{columns};
-    $p->{types}{columns} = 1;
-  }
-  if (ref $p->{types}{relationships}) {
-    $p->{relationship_names} //= $p->{types}{relationships};
-    $p->{types}{relationships} = 1;
-  }
-  if (ref $p->{types}{constraints}){
-    $p->{constraint_names} //= $p->{types}{constraints};
-    $p->{types}{constraints} = 1;
-  }
-  # --
-  
-  unless ($p->{mode} && $p->{mode} eq 'ignore') { # <-- i.e. 'limit'
-  
-    $p->{types}{columns}       = 1 if ($p->{column_names});
-    $p->{types}{relationships} = 1 if ($p->{relationship_names});
-    $p->{types}{constraints}   = 1 if ($p->{constraint_names});
-    delete $p->{types} unless (keys %{$p->{types}} > 0);
-  
-    # -- The true value of any of limit mode param except these
-    # automatically implies limiting to source 'changed' events:
-    my @special = qw(mode diff _schema_diff source_events);
-    my %sp = map {$_=>1} @special;
-    my $imp_s_ch_only = List::Util::first { $p->{$_} && !$sp{$_} } keys %$p;
-    if($imp_s_ch_only) {
-      # If the user is excluding 'change' source_events 
-      # everything will be filtered out:
-      my $cur = &_coerce_list_hash($p->{source_events});
-      $diff = undef if ($cur && !$cur->{changed});
-      $p->{source_events} = { changed => 1 };
-    }
-    # --
-  }
-  
-  my $Filter = DBIx::Class::Schema::Diff::Filter->new( $p ) ;
+  my $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
+  my $diff   = $self->diff;
   
   return __PACKAGE__->new({
     _schema_diff => $self->_schema_diff,
@@ -94,16 +78,20 @@ sub filter_out {
   return $self->filter( $params );
 }
 
+
 sub _coerce_filter_args {
   my ($self,@args) = @_;
-  my $params = $args[0];
-  unless (ref($args[0]) eq 'HASH') {
-    # Easy "types" as string args:
-    my %t = map {$_=>1} &_types_list;
-    @args = map { $t{$_} ? "types.$_" : $_ } @args;
-    $params = &_coerce_to_deep_hash_bool(\@args);
-  }
-  return $params;
+  
+  my $params = (
+    scalar(@args) > 1
+    || ! ref($args[0])
+    || ref($args[0]) ne 'HASH'
+  ) ? { match => \@args } : $args[0];
+  
+  return { 
+    %$params,
+    match => $self->MatchLayout->coerce($params->{match})
+  };
 }
 
 

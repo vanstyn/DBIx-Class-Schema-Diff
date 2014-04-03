@@ -9,50 +9,19 @@ with 'DBIx::Class::Schema::Diff::Role::Common';
 
 use Types::Standard qw(:all);
 
-has 'mode', is => 'ro', isa => Enum[qw(limit ignore)], default => sub{'limit'};
+has 'mode',  is => 'ro', isa => Enum[qw(limit ignore)], default => sub{'limit'};
+has 'match', is => 'ro', isa => Maybe[InstanceOf['Hash::Layout']], default => sub{undef};
 
-my @types = &_types_list;
-has 'types', is => 'ro', isa => Maybe[Map[Enum[@types],Bool]], 
-  coerce => \&_coerce_list_hash;
+has 'events', is => 'ro', coerce => \&_coerce_list_hash,
+  isa => Maybe[Map[Enum[qw(added changed deleted)],Bool]];
 
-my @attrs = ('sources',@types);
-for my $attr (@attrs) {
-  has $attr => ( 
-    is => 'ro', isa => Maybe[Map[Str,Bool]],
-    coerce => \&_coerce_list_hash
-  );
-  # event attr:
-  $attr =~ s/s$//; #<-- make singular
-  has $attr . '_events' => ( 
-    is => 'ro', isa => Maybe[Map[Enum[qw(added changed deleted)],Bool]],
-    coerce => \&_coerce_list_hash
-  );
-}
+has 'source_events', is => 'ro', coerce => \&_coerce_list_hash,
+  isa => Maybe[Map[Enum[qw(added changed deleted)],Bool]];
 
-has 'column_names', is => 'ro', isa => Maybe[HashRef], 
-  coerce => \&_coerce_list_hash;
-
-has 'relationship_names', is => 'ro', isa => Maybe[HashRef], 
-  coerce => \&_coerce_list_hash;
-  
-has 'constraint_names', is => 'ro', isa => Maybe[HashRef], 
-  coerce => \&_coerce_list_hash;
-
-has 'column_info', is => 'ro', isa => Maybe[Map[Str,Bool]], 
-  coerce => \&_coerce_to_deep_hash;
-
-has 'relationship_info', is => 'ro', isa => Maybe[Map[Str,Bool]], 
-  coerce => \&_coerce_to_deep_hash;
-
-# Plural form method aliases:
-sub columns_events       { (shift)->column_events }
-sub relationships_events { (shift)->relationship_events }
-sub constraints_events   { (shift)->constraint_events }
-sub columns_names        { (shift)->column_names }
-sub relationships_names  { (shift)->relationship_names }
-sub constraints_names    { (shift)->constraint_names }
-sub columns_info         { (shift)->column_info }
-sub relationships_info   { (shift)->relationship_info }
+has 'empty_match', is => 'ro', lazy => 1, default => sub {
+  my $self = shift;
+  return (scalar(keys %{$self->match->Data}) > 0) ? 0 : 1;
+}, init_arg => undef, isa => Bool;
 
 
 sub filter {
@@ -63,9 +32,10 @@ sub filter {
   for my $s_name (keys %$diff) {
     my $h = $diff->{$s_name};
     next if (
-      $self->_is_skip( sources => $s_name ) ||
-      $self->_is_skip( source_events => $h->{_event})
+      $self->skip_source($s_name)
+      || $self->_is_skip( source_events => $h->{_event})
     );
+    
     $newd->{$s_name} = $self->source_filter( $s_name => $h );
     delete $newd->{$s_name} unless (defined $newd->{$s_name});
     
@@ -88,7 +58,7 @@ sub source_filter {
   
   my $newd = {};
   for my $type (keys %$diff) {
-    next if ($type ne '_event' && $self->_is_skip( types => $type ));
+    next if ($type ne '_event' && $self->skip_type($s_name => $type));
     my $val = $diff->{$type};
     if($type eq 'columns' || $type eq 'relationships' || $type eq 'constraints') {
       $newd->{$type} = $self->_info_filter( $type, $s_name => $val );
@@ -109,11 +79,14 @@ sub _info_filter {
   my $new_items = {};
 
   for my $name (keys %$items) {
-    next if ($self->_is_skip( $type.'_events' => $items->{$name}{_event}));
-    next if ($self->_is_skip( $type.'_names'  => $name ));
+    next if (
+      $self->_is_skip( 'events' => $items->{$name}{_event}) ||
+      $self->skip_type_id($s_name, $type => $name )
+    );
+
     if($items->{$name}{_event} eq 'changed') {
-      my $meth = $type.'_info';
-      my $check = $self->can($meth) ? $self->$meth : undef;
+    
+      my $check = $self->match->lookup_path($s_name, $type, $name);
       
       if($check) {
         my $new_diff = $check ? $self->_deep_hash_filter(
@@ -172,5 +145,51 @@ sub _is_skip {
   $self->mode eq 'limit' ? $h && ! $h->{$key} : $h && $h->{$key};
 }
 
+
+sub skip_source {
+  my ($self, $s_name) = @_;
+  my $HL = $self->match or return 0;
+  my $set = $HL->lookup_path($s_name) || 0;
+  
+  if($self->mode eq 'limit') {
+    return 0 if ($self->empty_match);
+    return $set ? 0 : 1;
+  }
+  else {
+    return $set && ! ref($set) ? 1 : 0;
+  }
+}
+
+sub skip_type {
+  my ($self, $s_name, $type) = @_;
+  my $HL = $self->match or return 0;
+  my $set = $HL->lookup_path($s_name,$type);
+  
+  if($self->mode eq 'limit') {
+    return 0 if ($self->empty_match);
+    # If this source/type is set, OR if the entire source is included:
+    return $set || 1 == $HL->lookup_path($s_name) ? 0 : 1;
+  }
+  else {
+    return $set && ! ref($set) ? 1 : 0;
+  }
+}
+
+sub skip_type_id {
+  my ($self, $s_name, $type, $id) = @_;
+  my $HL = $self->match or return 0;
+  my $set = $HL->lookup_path($s_name,$type,$id);
+  
+  if($self->mode eq 'limit') {
+    return 0 if ($self->empty_match);
+    # If this source/type is set, OR if the entire source or source/type is included:
+    return $set
+      || 1 == $HL->lookup_path($s_name)
+      || 1 == $HL->lookup_path($s_name,$type) ? 0 : 1;
+  }
+  else {
+    return $set && ! ref($set) ? 1 : 0;
+  }
+}
 
 1;
