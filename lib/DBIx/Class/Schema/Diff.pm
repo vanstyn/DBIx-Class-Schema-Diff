@@ -88,6 +88,13 @@ sub _coerce_filter_args {
     || ref($args[0]) ne 'HASH'
   ) ? { match => \@args } : $args[0];
   
+  unless (exists $params->{match}) {
+    my $n = { match => $params };
+    my @othr = qw(events source_events);
+    exists $n->{match}{$_} and $n->{$_} = delete $n->{match}{$_} for (@othr);
+    $params = $n;
+  }
+
   return { 
     %$params,
     match => $self->MatchLayout->coerce($params->{match})

@@ -46,6 +46,13 @@ sub filter {
       $newd->{$s_name}{_event} eq 'changed' &&
       keys (%{$newd->{$s_name}}) == 1
     );
+    
+    delete $newd->{$s_name} if (
+      exists $newd->{$s_name} &&
+      $self->change_only_source($s_name) &&
+      $newd->{$s_name}{_event} &&
+      $newd->{$s_name}{_event} ne 'changed'
+    );
   }
   
   return (keys %$newd > 0) ? $newd : undef;
@@ -191,5 +198,15 @@ sub skip_type_id {
     return $set && ! ref($set) ? 1 : 0;
   }
 }
+
+# If the source is only defined as a ref (i.e. intermediate path)
+# then we will only consider changed, not added/deleted
+sub change_only_source {
+  my ($self, $s_name) = @_;
+  my $HL = $self->match or return 0;
+  my $set = $HL->lookup_path($s_name);
+  return $self->mode eq 'limit' && $set && ref $set ? 1 : 0;
+}
+
 
 1;

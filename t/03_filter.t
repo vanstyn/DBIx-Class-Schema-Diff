@@ -18,6 +18,7 @@ ok(
   "Initialize new DBIx::Class::Schema::Diff object"
 );
 
+
 is_deeply(
   $Diff->filter()->diff,
   $Diff->diff,
@@ -33,7 +34,6 @@ is_deeply(
   $Diff->diff,
   'Chained empty filters matches diff'
 );
-
 
 
 my $added_sources_expected_diff = { FooBar => { _event => "added" } };
@@ -55,15 +55,77 @@ is_deeply(
   'filter_out "deleted" and "changed" source_events via chaining'
 );
 
-#
-#my $only_isa_expected_diff = {
-#  Address => {
-#    _event => "changed",
-#    isa => [
-#      "+Test::DummyClass"
-#    ]
-#  }
-#};
+my $only_Address_expected_diff = {
+  Address => {
+    _event => "changed",
+    isa => [
+      "+Test::DummyClass"
+    ],
+    relationships => {
+      customers2 => {
+        _event => "added"
+      },
+      staffs => {
+        _event => "changed",
+        diff => {
+          attrs => {
+            cascade_delete => 1
+          }
+        }
+      }
+    },
+    table_name => "sakila.address"
+  }
+};
+
+is_deeply(
+  $Diff->filter('Address')->diff,
+  $only_Address_expected_diff,
+  'filter all but Address (1)'
+);
+is_deeply(
+  $Diff->filter('Address:')->diff,
+  $only_Address_expected_diff,
+  'filter all but Address (2)'
+);
+is_deeply(
+  $Diff->filter({ Address => 1 })->diff,
+  $only_Address_expected_diff,
+  'filter all but Address (3)'
+);
+
+
+my $only_isa_expected_diff = {
+  Address => {
+    _event => "changed",
+    isa => [
+      "+Test::DummyClass"
+    ]
+  }
+};
+is_deeply(
+  $Diff->filter('Address:isa')->diff,
+  $only_isa_expected_diff,
+  'filter all but Address:isa (1)'
+);
+is_deeply(
+  $Diff->filter({ Address => { isa => 1 } })->diff,
+  $only_isa_expected_diff,
+  'filter all but Address:isa (2)'
+);
+is_deeply(
+  $Diff->filter('*:isa')->diff,
+  $only_isa_expected_diff,
+  'filter all but *:isa (3)'
+);
+is_deeply(
+  $Diff->filter('isa')->diff,
+  $only_isa_expected_diff,
+  'filter all but isa (4)'
+);
+
+
+
 #is_deeply(
 #  $Diff->filter({ types => 'isa' })->diff,
 #  $only_isa_expected_diff,
@@ -120,16 +182,3 @@ done_testing;
 ##             'Film:rental_rate.extra'
 ##             'Film:rental_rate.extra.unsigned'
 ### -------------
-
-
-
-# -- for debugging:
-#
-#use Data::Dumper::Concise;
-#print STDERR "\n\n" . Dumper(
-#  $Diff->filter({ source_events => 'added' })->diff
-#  #$Diff->filter->diff,
-#  #$Diff->filter(
-#  #  'Address'
-#  #)->diff
-#) . "\n\n";
