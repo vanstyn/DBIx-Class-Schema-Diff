@@ -125,6 +125,213 @@ is_deeply(
 );
 
 
+is_deeply(
+  $Diff->filter(qw(Film City Address:relationships))->diff,
+  {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        },
+        staffs => {
+          _event => "changed",
+          diff => {
+            attrs => {
+              cascade_delete => 1
+            }
+          }
+        }
+      }
+    },
+    City => {
+      _event => "changed",
+      constraints => {
+        primary => {
+          _event => "deleted"
+        }
+      },
+      table_name => "city1"
+    },
+    Film => {
+      _event => "changed",
+      columns => {
+        film_id => {
+          _event => "changed",
+          diff => {
+            is_auto_increment => 0
+          }
+        },
+        id => {
+          _event => "added"
+        },
+        rating => {
+          _event => "changed",
+          diff => {
+            extra => {
+              list => [
+                "G",
+                "PG",
+                "PG-13",
+                "R",
+                "NC-17",
+                "TV-MA"
+              ]
+            }
+          }
+        },
+        rental_rate => {
+          _event => "changed",
+          diff => {
+            size => [
+              6,
+              2
+            ]
+          }
+        }
+      },
+      constraints => {
+        primary => {
+          _event => "changed",
+          diff => {
+            columns => [
+              "id"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Filter to anything in City or Film, but only relationships in Address"
+);
+
+is_deeply(
+  $Diff->filter(qw(table_name))->diff,
+  {
+    Address => {
+      _event => "changed",
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    }
+  },
+  "Filter to only changes in table_name"
+);
+
+is_deeply(
+  $Diff->filter('constraints')->filter_out('rental_date')->diff,
+  {
+    City => {
+      _event => "changed",
+      constraints => {
+        primary => {
+          _event => "deleted"
+        }
+      }
+    },
+    Film => {
+      _event => "changed",
+      constraints => {
+        primary => {
+          _event => "changed",
+          diff => {
+            columns => [
+              "id"
+            ]
+          }
+        }
+      }
+    },
+    Rental => {
+      _event => "changed",
+      constraints => {
+        rental_date1 => {
+          _event => "added"
+        }
+      }
+    },
+    Store => {
+      _event => "changed",
+      constraints => {
+        idx_unique_store_manager => {
+          _event => "added"
+        }
+      }
+    }
+  },
+  "Filter to only contraints, then filter_out 'rental_date'"
+);
+
+is_deeply(
+  $Diff->filter(qw(constraints relationships))
+   ->filter_out(qw(staffs rental_date1 customer))
+   ->filter_out({ events => 'deleted' })
+   ->diff,
+  {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        }
+      }
+    },
+    Film => {
+      _event => "changed",
+      constraints => {
+        primary => {
+          _event => "changed",
+          diff => {
+            columns => [
+              "id"
+            ]
+          }
+        }
+      }
+    },
+    Store => {
+      _event => "changed",
+      constraints => {
+        idx_unique_store_manager => {
+          _event => "added"
+        }
+      }
+    }
+  },
+  "Complex chained filter/filter_out combo (1)"
+);
+
+is_deeply(
+  $Diff->filter(qw(constraints relationships FooBar))
+   ->filter_out(qw(staffs rental_date1 customer))
+   ->filter_out({ events => 'deleted' })
+   ->filter_out('Film')
+   ->diff,
+   {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        }
+      }
+    },
+    FooBar => {
+      _event => "added"
+    },
+    Store => {
+      _event => "changed",
+      constraints => {
+        idx_unique_store_manager => {
+          _event => "added"
+        }
+      }
+    }
+  },
+  "Complex chained filter/filter_out combo (2)"
+);
 
 #is_deeply(
 #  $Diff->filter({ types => 'isa' })->diff,

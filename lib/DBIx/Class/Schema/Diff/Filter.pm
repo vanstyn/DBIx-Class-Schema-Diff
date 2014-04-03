@@ -87,8 +87,8 @@ sub _info_filter {
 
   for my $name (keys %$items) {
     next if (
-      $self->_is_skip( 'events' => $items->{$name}{_event}) ||
-      $self->skip_type_id($s_name, $type => $name )
+      $self->_is_skip( 'events' => $items->{$name}{_event})
+      || $self->skip_type_id($s_name, $type => $name )
     );
 
     if($items->{$name}{_event} eq 'changed') {
@@ -175,7 +175,7 @@ sub skip_type {
   if($self->mode eq 'limit') {
     return 0 if ($self->empty_match);
     # If this source/type is set, OR if the entire source is included:
-    return $set || 1 == $HL->lookup_path($s_name) ? 0 : 1;
+    return $set || $HL->lookup_leaf_path($s_name) ? 0 : 1;
   }
   else {
     return $set && ! ref($set) ? 1 : 0;
@@ -191,8 +191,8 @@ sub skip_type_id {
     return 0 if ($self->empty_match);
     # If this source/type is set, OR if the entire source or source/type is included:
     return $set
-      || 1 == $HL->lookup_path($s_name)
-      || 1 == $HL->lookup_path($s_name,$type) ? 0 : 1;
+      || $HL->lookup_path($s_name)
+      || $HL->lookup_leaf_path($s_name,$type) ? 0 : 1;
   }
   else {
     return $set && ! ref($set) ? 1 : 0;
