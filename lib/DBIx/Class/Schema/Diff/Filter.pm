@@ -39,17 +39,17 @@ sub filter {
     
     $newd->{$s_name} = $self->source_filter( $s_name => $h );
     delete $newd->{$s_name} unless (defined $newd->{$s_name});
-    
+
     # Strip if the event is 'changed' but the diff data has been stripped
     delete $newd->{$s_name} if (
       $newd->{$s_name} && 
       $newd->{$s_name}{_event} &&
       $newd->{$s_name}{_event} eq 'changed' &&
-      keys (%{$newd->{$s_name}}) == 1
+      scalar(keys %{$newd->{$s_name}}) == 1
     );
   }
   
-  return (keys %$newd > 0) ? $newd : undef;
+  return scalar(keys %$newd) > 0 ? $newd : undef;
 }
 
 
@@ -70,7 +70,7 @@ sub source_filter {
     }
   }
   
-  return (keys %$newd > 0) ? $newd : undef;
+  return (scalar(keys %$newd) > 0) ? $newd : undef;
 }
 
 sub _info_filter {
@@ -87,13 +87,12 @@ sub _info_filter {
 
     if($items->{$name}{_event} eq 'changed') {
     
-      my $check = $self->match->lookup_path($s_name, $type, $name);
-      
+      my $check = $self->test_path($s_name, $type, $name);
       if($check && ref($check) eq 'HASH') {
-        my $new_diff = $check ? $self->_deep_hash_filter(
-          $check, $items->{$name}{diff}
-        ) : undef;
-        next unless ($new_diff);
+        my $new_diff = $self->_deep_value_filter(
+          $items->{$name}{diff}, $s_name, $type, $name
+        ) or next;
+        
         $new_items->{$name} = {
           _event => 'changed',
           diff   => $new_diff
@@ -110,19 +109,21 @@ sub _info_filter {
         #if($self->match->lookup_leaf_path($s_name, $type, $name));
     }
   }
-
-  return (keys %$new_items > 0) ? $new_items : undef;
+  
+  return scalar(keys %$new_items) > 0 ? $new_items : undef;
 }
 
-sub _deep_hash_filter {
-  my ($self, $check, $hash) = @_;
+sub _deep_value_filter {
+  my ($self, $hash, @path) = @_;
   
   my $new_hash = {};
   for my $k (keys %$hash) {
-    my ($val,$ch_val) = ($hash->{$k},$check->{$k});
-    if($ch_val) {
-      if(ref($val) eq 'HASH' && ref($ch_val) eq 'HASH' && keys %$ch_val > 0) {
-        $new_hash->{$k} = $self->_deep_hash_filter($ch_val,$val);
+    my $val = $hash->{$k};
+    my $set = $self->test_path(@path,$k);
+    
+    if($set) {
+      if($val && ref($val) eq 'HASH' && ref($set) eq 'HASH' && scalar(keys %$val) > 0) {
+        $new_hash->{$k} = $self->_deep_value_filter($val,@path,$k);
         delete $new_hash->{$k} unless (defined $new_hash->{$k});
       }
       else {
@@ -136,9 +137,8 @@ sub _deep_hash_filter {
     }
   }
   
-  return (keys %$new_hash > 0) ? $new_hash : undef;
+  return scalar(keys %$new_hash) > 0 ? $new_hash : undef;
 }
-
 
 
 sub _is_skip {

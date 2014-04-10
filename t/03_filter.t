@@ -456,5 +456,31 @@ is(
   'Filtering on a invalid keyword results in an empty diff (undef)'
 );
 
+is_deeply(
+  $Diff->filter('*.extra')->diff,
+  {
+    Film => {
+      _event => "changed",
+      columns => {
+        rating => {
+          _event => "changed",
+          diff => {
+            extra => {
+              list => [
+                "G",
+                "PG",
+                "PG-13",
+                "R",
+                "NC-17",
+                "TV-MA"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "Filter to only column/relationship attrs with 'extra'"
+);
 
 done_testing;
