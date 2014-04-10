@@ -480,7 +480,93 @@ is_deeply(
       }
     }
   },
-  "Filter to only column/relationship attrs with 'extra'"
+  "Filter to only column/relationship info with 'extra'"
+);
+
+is_deeply(
+  $Diff->filter(qw(isa *.is_nullable *.size))->diff,
+  {
+    Address => {
+      _event => "changed",
+      isa => [
+        "+Test::DummyClass"
+      ]
+    },
+    Film => {
+      _event => "changed",
+      columns => {
+        rental_rate => {
+          _event => "changed",
+          diff => {
+            size => [
+              6,
+              2
+            ]
+          }
+        }
+      }
+    },
+    FilmCategory => {
+      _event => "changed",
+      columns => {
+        last_update => {
+          _event => "changed",
+          diff => {
+            is_nullable => 1
+          }
+        }
+      }
+    }
+  },
+  "Filter to only info 'is_nullable' or 'size' + isa"
+);
+
+is_deeply(
+  $Diff->filter(qw(table_name relationships/*.attrs.cascade_delete))->diff,
+  {
+    Address => {
+      _event => "changed",
+      relationships => {
+        staffs => {
+          _event => "changed",
+          diff => {
+            attrs => {
+              cascade_delete => 1
+            }
+          }
+        }
+      },
+      table_name => "sakila.address"
+    },
+    City => {
+      _event => "changed",
+      table_name => "city1"
+    }
+  },
+  "Filter to only relationship cascade_delete attrs + table_name"
+);
+
+is_deeply(
+  $Diff->filter('relationships')->filter_out('*.attrs')->diff,
+  {
+    Address => {
+      _event => "changed",
+      relationships => {
+        customers2 => {
+          _event => "added"
+        }
+      }
+    },
+    Rental => {
+      _event => "changed",
+      relationships => {
+        customer => {
+          _event => "deleted"
+        }
+      }
+    }
+  },
+  "Filter to only relationships, excluding attrs"
 );
 
 done_testing;
