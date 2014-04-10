@@ -67,12 +67,20 @@ sub filter {
   
   # Make a second pass, using the actual matched paths to filter out
   # the intermediate paths that didn't actually match anything:
-  if($Filter->mode eq 'limit') {
-    $params->{match} = $Filter->match->clone->reset->load( map {
-      $Filter->match->path_to_composit_key(@$_)
-    } @{$Filter->matched_paths} );
-    $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
-    $diff   = $Filter->filter( $diff );
+  #  (update: unless this is an empty match, in which case we will just
+  #  return the whole diff as-is)
+  if($Filter->mode eq 'limit' && ! $Filter->empty_match) {
+    if(scalar(@{$Filter->matched_paths}) > 0) {;
+      $params->{match} = $Filter->match->clone->reset->load( map {
+        $Filter->match->path_to_composit_key(@$_)
+      } @{$Filter->matched_paths} );
+      $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
+      $diff   = $Filter->filter( $diff );
+    }
+    else {
+      # If nothing was matched, in limit mode, the diff is undef:
+      $diff = undef;
+    }
   }
   
   return __PACKAGE__->new({

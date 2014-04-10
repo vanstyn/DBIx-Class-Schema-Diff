@@ -429,5 +429,11 @@ is_deeply(
   "Complex chained filter/filter_out combo (3)"
 );
 
+is(
+  $Diff->filter('something_which_will_not_be_found')->diff,
+  undef,
+  'Filtering on a invalid keyword results in an empty diff (undef)'
+);
+
 
 done_testing;
