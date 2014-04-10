@@ -179,6 +179,7 @@ sub skip_type {
 
 sub skip_type_id {
   my ($self, $s_name, $type, $id) = @_;
+
   my $HL = $self->match or return 0;
   my $set = $self->test_path($s_name,$type,$id);
   
@@ -186,7 +187,7 @@ sub skip_type_id {
     return 0 if ($self->empty_match);
     # If this source/type is set, OR if the entire source or source/type is included:
     return $set
-      || $self->test_path($s_name)
+      || $self->test_leaf_path($s_name)
       || $self->test_leaf_path($s_name,$type) ? 0 : 1;
   }
   else {

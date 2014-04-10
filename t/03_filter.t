@@ -389,6 +389,27 @@ is_deeply(
 
 
 is_deeply(
+  $Diff->filter('rental_rate')->diff,
+  {
+    Film => {
+      _event => "changed",
+      columns => {
+        rental_rate => {
+          _event => "changed",
+          diff => {
+            size => [
+              6,
+              2
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Filter to any keyword/identifier 'rental_rate'"
+);
+
+is_deeply(
   $Diff->filter(qw(constraints relationships FooBar last_update))
    ->filter_out(qw(staffs rental_date1 customer))
    ->filter_out({ events => 'deleted' })

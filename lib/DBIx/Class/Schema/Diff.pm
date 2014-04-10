@@ -70,7 +70,7 @@ sub filter {
   #  (update: unless this is an empty match, in which case we will just
   #  return the whole diff as-is)
   if($Filter->mode eq 'limit' && ! $Filter->empty_match) {
-    if(scalar(@{$Filter->matched_paths}) > 0) {;
+    if(scalar(@{$Filter->matched_paths}) > 0) {
       $params->{match} = $Filter->match->clone->reset->load( map {
         $Filter->match->path_to_composit_key(@$_)
       } @{$Filter->matched_paths} );
