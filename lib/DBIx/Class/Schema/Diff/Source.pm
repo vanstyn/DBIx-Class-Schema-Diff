@@ -23,23 +23,6 @@ has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::Schema'
 ];
 
-has 'ignore', is => 'ro', isa => Maybe[Map[Enum[qw(
- columns relationships constraints table_name isa
-)],Bool]], coerce => \&_coerce_list_hash;
-
-has 'limit', is => 'ro', isa => Maybe[Map[Enum[qw(
- columns relationships constraints table_name isa
-)],Bool]], coerce => \&_coerce_list_hash;
-
-
-my @_ignore_limit_attrs = qw(
-  limit_columns       ignore_columns
-  limit_relationships ignore_relationships
-  limit_constraints   ignore_constraints
-);
-has $_ => (is => 'ro', isa => Maybe[ArrayRef]) for (@_ignore_limit_attrs);
-
-
 has 'old_class', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
   return undef unless ($self->old_source);
@@ -86,8 +69,6 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
       old_info    => $o && $o->has_column($_) ? $o->column_info($_) : undef,
       new_info    => $n && $n->has_column($_) ? $n->column_info($_) : undef,
       _source_diff => $self,
-      limit       => $self->limit_columns,
-      ignore      => $self->ignore_columns
     ) } @columns 
   };
 
@@ -108,8 +89,6 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
       old_info    => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
       new_info    => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
       _source_diff => $self,
-      limit       => $self->limit_relationships,
-      ignore      => $self->ignore_relationships
     ) } @rels
   };
   
@@ -136,8 +115,6 @@ has 'constraints', is => 'ro', lazy => 1, default => sub {
         old_info    => scalar(@o_uc_cols) > 0 ? { columns => \@o_uc_cols } : undef,
         new_info    => scalar(@n_uc_cols) > 0 ? { columns => \@n_uc_cols } : undef,
         _source_diff => $self,
-        limit       => $self->limit_constraints,
-        ignore      => $self->ignore_constraints
       ) 
     } @consts
   };
@@ -202,9 +179,6 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   
   # TODO: other data points TDB 
   # ...
-  
-  # Remove items specified in ignore:
-  $self->_is_ignore($_) and delete $diff->{$_} for (keys %$diff);
   
   # No changes:
   return undef unless (keys %$diff > 0);

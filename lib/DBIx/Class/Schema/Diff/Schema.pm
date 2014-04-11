@@ -23,29 +23,6 @@ has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema'
 ];
 
-has 'ignore_sources', is => 'ro', isa => Maybe[Map[Str,Bool]], 
-  coerce => \&_coerce_list_hash;
-  
-has 'limit_sources',  is => 'ro', isa => Maybe[Map[Str,Bool]], 
-  coerce => \&_coerce_list_hash;
-
-
-
-
-my @_ignore_limit_attrs = qw(
-  limit               ignore 
-  limit_columns       ignore_columns
-  limit_relationships ignore_relationships
-  limit_constraints   ignore_constraints
-);
-
-has $_ => (
-  is  => 'ro', coerce => \&_coerce_ignore_limit,
-  isa => Maybe[HashRef[ArrayRef]]
-) for (@_ignore_limit_attrs);
-
-
-
 around BUILDARGS => sub {
   my ($orig, $self, @args) = @_;
   my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
@@ -84,62 +61,13 @@ sub all_source_names {
 has 'sources', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
   
-  my ($o,$n) = ($self->old_schema,$self->new_schema);
-  
-  # List of all sources in old, new, or both:
-  my @sources = $self->all_source_names;
-  my %src = map {$_=>1} @sources;
-  
-  if($self->limit_sources) {
-    $src{$_} or die "No such source '$_' specified in 'limit_sources" 
-      for (keys %{$self->limit_sources});
-  }
-  
-  if($self->ignore_sources) {
-    $src{$_} or die "No such source '$_' specified in 'ignore_sources" 
-      for (keys %{$self->ignore_sources});
-  }
-  
-  my $s = {
-    map {
-      my $name = $_;
-      my %flattened_ignore_limit_opts = map { 
-         $_ => $self->_flatten_for($self->$_ => $name) 
-      } @_ignore_limit_attrs;
-      
-      my %opt = (
-        old_source  => scalar try{$o->source($name)},
-        new_source  => scalar try{$n->source($name)},
-        _schema_diff => $self,
-        %flattened_ignore_limit_opts
-      );
-      
-      # -- Add ignores *implied* by source-specific + type-specific 
-      # limits being specified, but ommiting this source
-      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'columns') ] if (
-          $self->limit_columns &&
-        ! $self->limit_columns->{''} &&
-        ! $self->limit_columns->{$name}
-      );
-      
-      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'relationships') ] if (
-          $self->limit_relationships &&
-        ! $self->limit_relationships->{''} &&
-        ! $self->limit_relationships->{$name}
-      );
-      
-      $opt{ignore} = [ uniq(@{$opt{ignore}||[]},'constraints') ] if (
-          $self->limit_constraints &&
-        ! $self->limit_constraints->{''} &&
-        ! $self->limit_constraints->{$name}
-      );
-      # --
-      
-      $_ => DBIx::Class::Schema::Diff::Source->new(%opt)
-    } grep { ! $self->_is_ignore_source($_) } @sources 
-  };
-  
-  return $s;
+  return { map {
+    $_ => DBIx::Class::Schema::Diff::Source->new(
+      old_source  => scalar try{$self->old_schema->source($_)},
+      new_source  => scalar try{$self->new_schema->source($_)},
+      _schema_diff => $self,
+    )
+  } $self->all_source_names };
   
 }, init_arg => undef, isa => HashRef;
 
@@ -156,14 +84,6 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   return $diff;
   
 }, init_arg => undef, isa => Maybe[HashRef];
-
-sub _is_ignore_source {
-  my ($self,$name) = @_;
-  return (
-    ($self->ignore_sources && $self->ignore_sources->{$name}) ||
-    ($self->limit_sources && ! $self->limit_sources->{$name})
-  );
-}
 
 sub _schema_diff { (shift) }
 

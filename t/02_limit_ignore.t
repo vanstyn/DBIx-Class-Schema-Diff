@@ -111,39 +111,6 @@ is_deeply(
   "Saw expected changes with 'ignore' and 'ignore_sources'"
 );
 
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    ignore => ['bad_option']
-  ) },
-  "Dies with invalid ignore options"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    limit => ['bad_option']
-  ) },
-  "Dies with invalid limit options"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    ignore_sources => ['BadSourceName']
-  ) },
-  "Dies with invalid ignore_sources"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    limit_sources => ['BadSourceName']
-  ) },
-  "Dies with invalid limit_sources"
-);
-
-
 my $cust_limit = {
   Address => {
     _event => "changed",
