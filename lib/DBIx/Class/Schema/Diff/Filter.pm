@@ -203,7 +203,11 @@ sub test_path {
 sub test_leaf_path {
   my ($self, @path) = @_;
   my $ret = $self->match->lookup_leaf_path(@path);
-  push @{$self->matched_paths}, \@path if ($ret);
+  push @{$self->matched_paths}, \@path if (
+    $ret 
+    # We don't want to record the path as "matched" for empty HashRef {} leafs 
+    && ! ref $ret
+  );
   return $ret;
 }
 
