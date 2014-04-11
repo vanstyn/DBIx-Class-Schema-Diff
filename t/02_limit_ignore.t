@@ -21,8 +21,8 @@ sub NewD { DBIx::Class::Schema::Diff->new(@_) }
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    ignore => [qw(columns relationships constraints)] 
-  )->diff,
+    #ignore => [qw(columns relationships constraints)] 
+  )->filter_out(qw(columns relationships constraints))->diff,
   {
     Address => {
       _event => "changed",
@@ -48,8 +48,8 @@ is_deeply(
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    limit => [qw(table_name isa)] 
-  )->diff,
+    #limit => [qw(table_name isa)] 
+  )->filter(qw(table_name isa))->diff,
   {
     Address => {
       _event => "changed",
@@ -62,12 +62,6 @@ is_deeply(
       _event => "changed",
       table_name => "city1"
     },
-    FooBar => {
-      _event => "added"
-    },
-    SaleByStore => {
-      _event => "deleted"
-    }
   },
   "Saw expected changes with 'limit'"
 );
@@ -76,9 +70,9 @@ is_deeply(
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    limit => [qw(table_name isa)],
-    limit_sources => [qw(Address City)]
-  )->diff,
+    #limit => [qw(table_name isa)],
+    #limit_sources => [qw(Address City)]
+  )->filter(qw(table_name isa))->filter(qw(Address City))->diff,
   {
     Address => {
       _event => "changed",
@@ -98,9 +92,9 @@ is_deeply(
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
-    ignore => [qw(columns relationships constraints)],
-    ignore_sources => [qw(FooBar SaleByStore)]
-  )->diff,
+    #ignore => [qw(columns relationships constraints)],
+    #ignore_sources => [qw(FooBar SaleByStore)]
+  )->filter_out(qw(columns relationships constraints FooBar SaleByStore))->diff,
   {
     Address => {
       _event => "changed",
@@ -116,39 +110,6 @@ is_deeply(
   },
   "Saw expected changes with 'ignore' and 'ignore_sources'"
 );
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    ignore => ['bad_option']
-  ) },
-  "Dies with invalid ignore options"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    limit => ['bad_option']
-  ) },
-  "Dies with invalid limit options"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    ignore_sources => ['BadSourceName']
-  ) },
-  "Dies with invalid ignore_sources"
-);
-
-dies_ok(
-  sub{ NewD(
-    old_schema => $s1, new_schema => $s3, 
-    limit_sources => ['BadSourceName']
-  ) },
-  "Dies with invalid limit_sources"
-);
-
 
 my $cust_limit = {
   Address => {
@@ -204,9 +165,9 @@ my $cust_limit = {
 is_deeply(
   NewD(
     old_schema => $s1, new_schema => $s3, 
-    limit => [qw(Film.columns City.table_name isa)],
-    limit_sources => [qw(Film Address City)]
-  )->diff,
+    #limit => [qw(Film.columns City.table_name isa)],
+    #limit_sources => [qw(Film Address City)]
+  )->filter(qw(Film:columns City:table_name isa))->filter(qw(Film Address City))->diff,
   $cust_limit,
   "Saw expected changes with source-specific 'limit' (list style)"
 );
@@ -214,9 +175,12 @@ is_deeply(
 is_deeply(
   NewD(
     old_schema => $s1, new_schema => $s3, 
-    limit => { Film => ['columns'], City => ['table_name'], '' => ['isa'] },
-    limit_sources => [qw(Film Address City)]
-  )->diff,
+    #limit => { Film => ['columns'], City => ['table_name'], '' => ['isa'] },
+    #limit_sources => [qw(Film Address City)]
+  )
+  ->filter({ Film => {'columns'=>1}, City => {'table_name'=>1}, '*' => {'isa'=>1}})
+  ->filter(qw(Film Address City))
+  ->diff,
   $cust_limit,
   "Saw expected changes with source-specific 'limit' (hash style)"
 );
@@ -262,10 +226,14 @@ my $cust_limit2 = {
 is_deeply(
   NewD(
     old_schema => $s1, new_schema => $s3, 
-    limit => [qw(Film.columns City.table_name isa)],
-    limit_sources => [qw(Film Address City)],
-    ignore_columns => [qw(rating)],
-  )->diff,
+    #limit => [qw(Film.columns City.table_name isa)],
+    #limit_sources => [qw(Film Address City)],
+    #ignore_columns => [qw(rating)],
+  )
+  ->filter(qw(Film:columns City:table_name isa))
+  ->filter(qw(Film Address City))
+  ->filter_out('columns/rating')
+  ->diff,
   $cust_limit2,
   "Saw expected changes with source-specific 'limit' + ignore_columns"
 );
@@ -274,9 +242,12 @@ is_deeply(
 is_deeply(
   NewD(
     old_schema => $s1, new_schema => $s3, 
-    limit_columns => [qw(Film.rating Film.id)],
-    limit => [qw(columns isa)]
-  )->diff,
+    #limit_columns => [qw(Film.rating Film.id)],
+    #limit => [qw(columns isa)]
+  )
+  ->filter(qw(columns isa))
+  ->filter(qw(Film:rating Film:id isa))
+  ->diff,
   {
     Address => {
       _event => "changed",
@@ -307,12 +278,6 @@ is_deeply(
         }
       }
     },
-    FooBar => {
-      _event => "added"
-    },
-    SaleByStore => {
-      _event => "deleted"
-    }
   },
   "Saw expected changes with type-specific ignores implied by limits"
 );
