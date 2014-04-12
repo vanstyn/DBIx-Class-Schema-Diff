@@ -72,7 +72,7 @@ sub filter {
   if($Filter->mode eq 'limit' && ! $Filter->empty_match) {
     if(scalar(@{$Filter->matched_paths}) > 0) {
       $params->{match} = $Filter->match->clone->reset->load( map {
-        $Filter->match->path_to_composit_key(@$_)
+        $Filter->match->path_to_composite_key(@$_)
       } @{$Filter->matched_paths} );
       $Filter = DBIx::Class::Schema::Diff::Filter->new( $params ) ;
       $diff   = $Filter->filter( $diff );
