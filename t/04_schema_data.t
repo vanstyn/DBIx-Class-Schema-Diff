@@ -8,23 +8,9 @@ use lib "$Bin/lib";
 use Test::More;
 use Test::Exception;
 
-# --------
-# Need this just because is_deeply isn't smart enough to handle CodeRefs:
-sub strip_deep_subs($) {
-  my $hash = shift;
-  return 'sub { "DUMMY" }' if (ref $hash && ref($hash) eq 'CODE');
-  return $hash unless (ref $hash && ref($hash) eq 'HASH');
-  
-  my $nh = {};
-  $nh->{$_} = &strip_deep_subs($hash->{$_}) for (keys %$hash);
-  return $nh;
-}
-# ----------
-
-
 use aliased 'DBIx::Class::Schema::Diff::SchemaData';
 
-my $target_data = strip_deep_subs &_sakila_data_target;
+my $target_data = &_sakila_data_target;
 
 ok(
   my $SD1 =  SchemaData->new( schema => 'TestSchema::Sakila' ),
@@ -32,7 +18,7 @@ ok(
 );
 
 is_deeply( 
-  strip_deep_subs $SD1->data => $target_data,
+  $SD1->data => $target_data,
   "Saw expected Sakila schema data (1)"
 );
 
@@ -42,18 +28,17 @@ ok(
 );
 
 is_deeply( 
-  strip_deep_subs $SD2->data => $target_data,
+  $SD2->data => $target_data,
   "Saw expected Sakila schema data (2)"
 );
 
 is_deeply( 
-  strip_deep_subs $SD2->data => strip_deep_subs $SD1->data,
+  $SD2->data => $SD1->data,
   "Saw expected Sakila schema data (3)"
 );
 
+
 done_testing;
-
-
 
 
 # This is in a sub at the end just to prevent scrolling since its so long:
@@ -83,12 +68,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         }
       },
@@ -234,12 +219,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         phone => {
@@ -360,12 +345,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         name => {
@@ -450,12 +435,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         }
       },
@@ -545,12 +530,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         }
       },
@@ -622,8 +607,8 @@ sub _sakila_data_target {{
         create_date => {
           _ic_dt_method => "datetime",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "datetime",
           datetime_undef_if_invalid => 1,
@@ -655,12 +640,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         store_id => {
@@ -882,12 +867,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         length => {
@@ -1101,12 +1086,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         }
       },
@@ -1205,12 +1190,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         }
       },
@@ -1451,12 +1436,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         store_id => {
@@ -1567,12 +1552,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         name => {
@@ -1755,19 +1740,19 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         payment_date => {
           _ic_dt_method => "datetime",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "datetime",
           datetime_undef_if_invalid => 1,
@@ -1908,19 +1893,19 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         rental_date => {
           _ic_dt_method => "datetime",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "datetime",
           datetime_undef_if_invalid => 1,
@@ -1934,8 +1919,8 @@ sub _sakila_data_target {{
         return_date => {
           _ic_dt_method => "datetime",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "datetime",
           datetime_undef_if_invalid => 1,
@@ -2193,12 +2178,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         password => {
@@ -2420,12 +2405,12 @@ sub _sakila_data_target {{
         last_update => {
           _ic_dt_method => "timestamp",
           _inflate_info => {
-            deflate => sub { "DUMMY" },
-            inflate => sub { "DUMMY" }
+            deflate => "sub { \"DUMMY\" }",
+            inflate => "sub { \"DUMMY\" }"
           },
           data_type => "timestamp",
           datetime_undef_if_invalid => 1,
-          default_value => \"current_timestamp",
+          default_value => "\\\"current_timestamp\"",
           is_nullable => 0
         },
         manager_staff_id => {
@@ -2564,8 +2549,6 @@ sub _sakila_data_target {{
     }
   }
 }}
-
-
 
 
 
