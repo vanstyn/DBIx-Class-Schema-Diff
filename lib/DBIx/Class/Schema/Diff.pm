@@ -145,6 +145,22 @@ DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas
    new_schema => $schema2
  );
  
+ # Dump current schema data to a json file for later use:
+ $D->old_schema->dump_json_file('/tmp/my_schema1_data.json');
+ 
+ # Or
+ DBIx::Class::Schema::Diff::SchemaData->new(
+   schema => 'My::Schema1'
+ )->dump_json_file('/tmp/my_schema1_data.json');
+ 
+ # Create new diff object using previously saved 
+ # schema data + current schema class:
+ $D = DBIx::Class::Schema::Diff->new(
+   old_schema => '/tmp/my_schema1_data.json',
+   new_schema => 'My::Schema1'
+ );
+ 
+ 
  # Get all differences (hash structure):
  my $hash = $D->diff;
  
@@ -226,13 +242,19 @@ Create a new DBIx::Class::Schema::Diff instance. The following build options are
 
 =item old_schema
 
-The "old" (or left-side) schema to be compared. Can be either a L<DBIx::Class::Schema> class name or
-connected object instance.
+The "old" (or left-side) schema to be compared. 
+
+Can be supplied as a L<DBIx::Class::Schema> class name, connected schema object instance, 
+or previously saved L<SchemaData|DBIx::Class::Schema::Diff::SchemaData> which can be 
+supplied as an object, HashRef, or a path to a file containing serialized JSON data (as 
+produced by L<DBIx::Class::Schema::Diff::SchemaData#dump_json_file>)
+
+See the SYNOPSIS and L<DBIx::Class::Schema::Diff::SchemaData> for more info.
 
 =item new_schema
 
-The "new" (or right-side) schema to be compared. Can be either a L<DBIx::Class::Schema> class name or
-connected object instance.
+The "new" (or right-side) schema to be compared. Accepts the same dynamic type options 
+as C<old_schema>.
 
 =back
 

@@ -181,9 +181,83 @@ DBIx::Class::Schema::Diff::SchemaDiff - Data representation of schema for diffin
 
  use DBIx::Class::Schema::Diff::SchemaData;
  
+ my $SD = DBIx::Class::Schema::Diff::SchemaData->new( 
+  schema => 'My::Schema'
+ );
  
+ $SD = DBIx::Class::Schema::Diff::SchemaData->new( 
+  schema => $schema
+ );
+ 
+ # Get hashref representation of schema:
+ my $hashref = $SD->data;
+ 
+ my $SD2 = DBIx::Class::Schema::Diff::SchemaData->new( 
+  data => $hashref
+ );
+ 
+ # Dump as JSON to file:
+ $SD2->dump_json_file('/path/to/schema_data.json');
+ 
+
 =head1 DESCRIPTION
 
-...
+Object class representing a DBIx::Class::Schema. The C<old_schema> and C<new_schema> build
+params in L<DBIx::Class::Schema::Diff> are dynamically coerced into objects of this class. 
+
+This class can also be instantiated directly to dump/save the current schema data for 
+later use by L<DBIx::Class::Schema::Diff> (See its SYNOPSIS).
+
+=head1 METHODS
+
+=head2 new
+
+Create a new DBIx::Class::Schema::Diff::SchemaData instance. The following build options are supported:
+
+=over 4
+
+=item schema
+
+DBIx::Class schema supplied as a class name or connected object instance. If this param is supplied
+it will be used to build C<data>.
+
+=item data
+
+Can be supplied instead of C<schema> to use previously generated data. 
+
+=back
+
+=head2 dump_json
+
+Returns C<data> as a serialized JSON string.
+
+=head2 dump_json_file
+
+Writes output of C<dump_json()> to the supplied filename as long as it doesn't already exists. If the
+file already exists, an exception is thrown.
+
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<DBIx::Class::Schema::Diff>
+
+=back
+
+=head1 AUTHOR
+
+Henry Van Styn <vanstyn@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by IntelliTree Solutions llc.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
 
 =cut
