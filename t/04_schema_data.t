@@ -5,9 +5,15 @@ use warnings;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 
+use Path::Class qw( dir file );
+my $var_dir = dir("$Bin/var");
+my $tmp_dir = dir($var_dir,"tmp");
+$tmp_dir->mkpath unless (-d $tmp_dir);
+
 use Test::More;
 use Test::Exception;
 
+use aliased 'DBIx::Class::Schema::Diff';
 use aliased 'DBIx::Class::Schema::Diff::SchemaData';
 
 my $target_data = &_sakila_data_target;
@@ -36,6 +42,60 @@ is_deeply(
   $SD2->data => $SD1->data,
   "Saw expected Sakila schema data (3)"
 );
+
+
+is(
+  Diff->new(
+    old_schema => $target_data,
+    new_schema => 'TestSchema::Sakila'
+  )->diff,
+  undef,
+  "Diffing schema class against schema data from hash"
+);
+
+is(
+  Diff->new(
+    old_schema => $var_dir->file('sakila_schema_data.json')->stringify,
+    new_schema => 'TestSchema::Sakila'
+  )->diff,
+  undef,
+  "Diffing schema class against schema data from test JSON file"
+);
+
+my $tmp_json_file = $tmp_dir->file('_tmp.json')->stringify;
+
+ok(
+  $SD2->dump_json_file($tmp_json_file),
+  "Dump to new JSON file"
+);
+
+is(
+  Diff->new(
+    old_schema => $tmp_json_file,
+    new_schema => 'TestSchema::Sakila'
+  )->diff,
+  undef,
+  "Diffing schema class against schema data from dumped JSON file"
+);
+
+is(
+  Diff->new(
+    old_schema => $tmp_json_file,
+    new_schema => $target_data
+  )->diff,
+  undef,
+  "Diffing schema hash data against schema data from dumped JSON file"
+);
+
+is(
+  Diff->new(
+    old_schema => $SD2,
+    new_schema => $tmp_json_file
+  )->diff,
+  undef,
+  "Diffing SchemaData object against schema data from dumped JSON file"
+);
+
 
 
 done_testing;

@@ -3,8 +3,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Data representation of schema for diffing
-
-our $VERSION = 0.01;
+# VERSION
 
 use Moo;
 with 'DBIx::Class::Schema::Diff::Role::Common';
@@ -13,6 +12,8 @@ use Types::Standard qw(:all);
 use Module::Runtime;
 use Scalar::Util qw(blessed);
 use Data::Dumper::Concise;
+use Path::Class qw(file);
+use JSON qw(to_json);
 
 has 'schema', is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema'
@@ -44,6 +45,22 @@ sub sources {
 sub source {
   my ($self, $name) = @_;
   return $self->data->{sources}{$name};
+}
+
+sub dump_json {
+  my $self = shift;
+  to_json( $self->data => { pretty => 1 });
+}
+
+sub dump_json_file {
+  my ($self, $path) = @_;
+  die "Filename required" unless ($path);
+  my $file = file($path)->absolute;
+  
+  die "Target file '$file' already exists." if (-e $file);
+  
+  $file->spew( $self->dump_json );
+  return -f $file ? 1 : 0;
 }
 
 

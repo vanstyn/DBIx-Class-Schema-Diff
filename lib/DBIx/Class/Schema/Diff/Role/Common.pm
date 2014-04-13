@@ -8,6 +8,8 @@ use Types::Standard qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Array::Diff;
+use JSON qw(decode_json);
+use Path::Class qw(file);
 
 sub _types_list { qw(
  columns
@@ -142,7 +144,7 @@ sub _coerce_schema_data {
   my ($v) = @_;
   my $rt = ref($v);
   if($rt) {
-    if(blessed($v) eq 'DBIx::Class::Schema::Diff::SchemaData') {
+    if(blessed($v) && blessed($v) eq 'DBIx::Class::Schema::Diff::SchemaData') {
       return $v;
     }
     elsif($rt eq 'HASH') {
@@ -154,6 +156,14 @@ sub _coerce_schema_data {
     }
   }
   else {
+    unless(Module::Runtime::is_module_name($v)) {
+      my $file = file($v)->absolute;
+      if(-f $file) {
+        # Assume it is a json file and try to decode it:
+        my $data = decode_json($file->slurp);
+        return DBIx::Class::Schema::Diff::SchemaData->new( data => $data );
+      }
+    }
     return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
   }
 }
