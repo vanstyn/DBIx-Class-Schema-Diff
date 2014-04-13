@@ -17,13 +17,6 @@ sub _types_list { qw(
  isa
 )}
 
-has 'old_schemaclass', is => 'ro', lazy => 1, default => sub { 
-  blessed((shift)->_schema_diff->old_schema)
-}, init_arg => undef, isa => Str;
-
-has 'new_schemaclass', is => 'ro', lazy => 1, default => sub { 
-  blessed((shift)->_schema_diff->new_schema)
-}, init_arg => undef, isa => Str;
 
 # Adapted from Hash::Diff, but heavily modified and specific to
 # the unique needs of this module...
@@ -65,6 +58,8 @@ sub _info_diff {
 }
 
 # test non-hash
+# Note: since 'SchemaData' was introduced (Github Issue #1) most of
+# this logic is now redundant/not needed...
 sub _is_eq {
   my ($self, $old, $new) = @_;
   
@@ -125,20 +120,6 @@ sub _is_eq {
     else {
       die "Unexpected ref type '$n_ref'";
     }
-  }
-  
-  my $o_class = $self->old_schemaclass;
-  my $n_class = $self->new_schemaclass;
-  
-  # Special check/test: string values that start with the schema
-  # class name need to have it stripped before comparing, because we
-  # expect different schema class names. This handles cases like
-  # relationships which reference other schema classes via their
-  # "absolute" class/path. This operation essentially makes the
-  # check "relative" like we need it to be.
-  if($new =~ /^${n_class}/) {
-    $new =~ s/^${n_class}//;
-    $old =~ s/^${o_class}//;
   }
 
   # simple scalar value comparison:

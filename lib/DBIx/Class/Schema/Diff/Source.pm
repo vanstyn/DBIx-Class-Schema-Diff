@@ -134,9 +134,9 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   } values %{$self->constraints} };
   delete $diff->{constraints} unless (keys %{$diff->{constraints}} > 0);
   
-  my $o_tbl = try{$self->old_source->{table_name}};
-  my $n_tbl = try{$self->new_source->{table_name}};
-  $diff->{table_name} = $n_tbl unless ($self->_is_eq($o_tbl,$n_tbl));
+  my $o_tbl = try{$self->old_source->{table_name}} || '';
+  my $n_tbl = try{$self->new_source->{table_name}} || '';
+  $diff->{table_name} = $n_tbl unless ($o_tbl eq $n_tbl);
   
   $diff->{isa} = $self->isa_diff if ($self->isa_diff);
   
