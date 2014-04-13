@@ -238,7 +238,7 @@ connected object instance.
 
 =head2 diff
 
-Returns the differences between the the schemas as a hash structure.
+Returns the differences between the the schemas as a hash structure, or C<undef> if there are none.
 
 =head2 filter
 
@@ -282,6 +282,10 @@ The unit tests in C<t/>
 =item *
 
 L<DBIx::Class>
+
+=item * 
+
+L<SQL::Translator::Diff>
 
 =back
 
