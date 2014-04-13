@@ -18,6 +18,22 @@ DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas
       new_schema => $schema2
     );
     
+    # Dump current schema data to a json file for later use:
+    $D->old_schema->dump_json_file('/tmp/my_schema1_data.json');
+    
+    # Or
+    DBIx::Class::Schema::Diff::SchemaData->new(
+      schema => 'My::Schema1'
+    )->dump_json_file('/tmp/my_schema1_data.json');
+    
+    # Create new diff object using previously saved 
+    # schema data + current schema class:
+    $D = DBIx::Class::Schema::Diff->new(
+      old_schema => '/tmp/my_schema1_data.json',
+      new_schema => 'My::Schema1'
+    );
+    
+    
     # Get all differences (hash structure):
     my $hash = $D->diff;
     
@@ -78,17 +94,23 @@ Create a new DBIx::Class::Schema::Diff instance. The following build options are
 
 - old\_schema
 
-    The "old" (or left-side) schema to be compared. Can be either a [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) class name or
-    connected object instance.
+    The "old" (or left-side) schema to be compared. 
+
+    Can be supplied as a [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) class name, connected schema object instance, 
+    or previously saved [SchemaData](https://metacpan.org/pod/DBIx::Class::Schema::Diff::SchemaData) which can be 
+    supplied as an object, HashRef, or a path to a file containing serialized JSON data (as 
+    produced by [DBIx::Class::Schema::Diff::SchemaData#dump\_json\_file](https://metacpan.org/pod/DBIx::Class::Schema::Diff::SchemaData#dump_json_file))
+
+    See the SYNOPSIS and [DBIx::Class::Schema::Diff::SchemaData](https://metacpan.org/pod/DBIx::Class::Schema::Diff::SchemaData) for more info.
 
 - new\_schema
 
-    The "new" (or right-side) schema to be compared. Can be either a [DBIx::Class::Schema](https://metacpan.org/pod/DBIx::Class::Schema) class name or
-    connected object instance.
+    The "new" (or right-side) schema to be compared. Accepts the same dynamic type options 
+    as `old_schema`.
 
 ### diff
 
-Returns the differences between the the schemas as a hash structure.
+Returns the differences between the the schemas as a hash structure, or `undef` if there are none.
 
 ### filter
 
@@ -119,6 +141,7 @@ For more examples, see the following:
 ## SEE ALSO
 
 - [DBIx::Class](https://metacpan.org/pod/DBIx::Class)
+- [SQL::Translator::Diff](https://metacpan.org/pod/SQL::Translator::Diff)
 
 ## AUTHOR
 
