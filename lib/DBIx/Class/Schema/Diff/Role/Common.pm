@@ -157,4 +157,25 @@ sub _coerce_schema_diff {
 }
 
 
+sub _coerce_schema_data {
+  my ($v) = @_;
+  my $rt = ref($v);
+  if($rt) {
+    if(blessed($v) eq 'DBIx::Class::Schema::Diff::SchemaData') {
+      return $v;
+    }
+    elsif($rt eq 'HASH') {
+      return DBIx::Class::Schema::Diff::SchemaData->new( data => $v );
+    }
+    else {
+      # Assume all other ref types  are schema instances:
+      return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+    }
+  }
+  else {
+    return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+  }
+}
+
+
 1;

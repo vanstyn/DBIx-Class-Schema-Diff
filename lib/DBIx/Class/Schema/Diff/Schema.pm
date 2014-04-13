@@ -14,40 +14,16 @@ use Module::Runtime;
 use Try::Tiny;
 
 use DBIx::Class::Schema::Diff::Source;
+use DBIx::Class::Schema::Diff::SchemaData;
 
 has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
-  'DBIx::Class::Schema'
-];
+  'DBIx::Class::Schema::Diff::SchemaData'
+], coerce => \&_coerce_schema_data;
 
 has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
-  'DBIx::Class::Schema'
-];
+  'DBIx::Class::Schema::Diff::SchemaData'
+], coerce => \&_coerce_schema_data;
 
-around BUILDARGS => sub {
-  my ($orig, $self, @args) = @_;
-  my %opt = (ref($args[0]) eq 'HASH') ? %{ $args[0] } : @args; # <-- arg as hash or hashref
-  
-  # Allow old/new schema to be supplied as either connected instances
-  # or class names. If class names, we'll automatically connect them
-  # to an SQLite::memory instance.
-  $opt{old_schema} = $self->_auto_connect_schema($opt{old_schema});
-  $opt{new_schema} = $self->_auto_connect_schema($opt{new_schema});
-
-  return $self->$orig(%opt);
-};
-
-sub _auto_connect_schema {
-  my ($self,$class) = @_;
-  return $class unless (defined $class && ! ref($class));
-  Module::Runtime::require_module($class);
-  return $class unless ($class->can('connect'));
-  return $class->connect('dbi:SQLite::memory:','','');
-}
-
-sub BUILD {
-  my $self = shift;
-  $self->sources; # <-- initialize
-}
 
 sub all_source_names {
   my $self = shift;
@@ -63,8 +39,9 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   
   return { map {
     $_ => DBIx::Class::Schema::Diff::Source->new(
-      old_source  => scalar try{$self->old_schema->source($_)},
-      new_source  => scalar try{$self->new_schema->source($_)},
+      name         => $_,
+      old_source   => scalar try{$self->old_schema->source($_)},
+      new_source   => scalar try{$self->new_schema->source($_)},
       _schema_diff => $self,
     )
   } $self->all_source_names };
@@ -86,16 +63,6 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
 }, init_arg => undef, isa => Maybe[HashRef];
 
 sub _schema_diff { (shift) }
-
-
-sub filter_diff {
-  my $self = shift;
-  my %opt = (ref($_[0]) eq 'HASH') ? %{ $_[0] } : @_; # <-- arg as hash or hashref
-  
-  
-  
-
-}
 
 
 1;

@@ -29,6 +29,24 @@ has 'data', is => 'ro', lazy => 1, default => sub {
 }, isa => HashRef, coerce => \&_coerce_deep_unsafe_refs;
 
 
+sub BUILD {
+  my $self = shift;
+
+  # initialize:
+  $self->data;
+}
+
+sub sources {
+  my $self = shift;
+  return sort keys %{ $self->data->{sources} || {} };
+}
+
+sub source {
+  my ($self, $name) = @_;
+  return $self->data->{sources}{$name};
+}
+
+
 sub _gen_data {
   my ($self, $schema) = @_;
   

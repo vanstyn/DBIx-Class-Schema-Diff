@@ -11,38 +11,13 @@ use List::MoreUtils qw(uniq);
 
 use DBIx::Class::Schema::Diff::InfoPacket;
 
-has 'old_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
-  'DBIx::Class::ResultSource'
-]];
-
-has 'new_source', required => 1, is => 'ro', isa => Maybe[InstanceOf[
-  'DBIx::Class::ResultSource'
-]];
+has 'name',       required => 1, is => 'ro', isa => Str;
+has 'old_source', required => 1, is => 'ro', isa => Maybe[HashRef];
+has 'new_source', required => 1, is => 'ro', isa => Maybe[HashRef];
 
 has '_schema_diff', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::Schema'
 ];
-
-has 'old_class', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return undef unless ($self->old_source);
-  $self->old_source->schema->class( $self->old_source->source_name );
-}, init_arg => undef, isa => Maybe[Str];
-
-has 'new_class', is => 'ro', lazy => 1, default => sub {
-  my $self = shift;
-  return undef unless ($self->new_source);
-  $self->new_source->schema->class( $self->new_source->source_name );
-}, init_arg => undef, isa => Maybe[Str];
-
-has 'name', is => 'ro', lazy => 1, default => sub { 
-  my $self = shift;
-  # TODO: handle new_source/old_source with different names
-  # (shouldn't need to worry about it currently)
-  $self->new_source ? 
-    $self->new_source->source_name : $self->old_source->source_name
-}, init_arg => undef, isa => Str;
-
 
 has 'added', is => 'ro', lazy => 1, default => sub { 
   my $self = shift;
@@ -61,13 +36,13 @@ has 'columns', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all columns in old, new, or both:
-  my @columns = uniq(try{$o->columns}, try{$n->columns});
+  my @columns = uniq(try{keys %{$o->{columns}}}, try{keys %{$n->{columns}}});
   
   return {
     map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
       name        => $_,
-      old_info    => $o && $o->has_column($_) ? $o->column_info($_) : undef,
-      new_info    => $n && $n->has_column($_) ? $n->column_info($_) : undef,
+      old_info    => $o ? $o->{columns}{$_} : undef,
+      new_info    => $n ? $n->{columns}{$_} : undef,
       _source_diff => $self,
     ) } @columns 
   };
@@ -81,13 +56,13 @@ has 'relationships', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all relationships in old, new, or both:
-  my @rels = uniq(try{$o->relationships},try{$n->relationships});
+  my @rels = uniq(try{keys %{$o->{relationships}}}, try{keys %{$n->{relationships}}});
   
   return {
     map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
       name        => $_,
-      old_info    => $o && $o->has_relationship($_) ? $o->relationship_info($_) : undef,
-      new_info    => $n && $n->has_relationship($_) ? $n->relationship_info($_) : undef,
+      old_info    => $o ? $o->{relationships}{$_} : undef,
+      new_info    => $n ? $n->{relationships}{$_} : undef,
       _source_diff => $self,
     ) } @rels
   };
@@ -101,22 +76,15 @@ has 'constraints', is => 'ro', lazy => 1, default => sub {
   my ($o,$n) = ($self->old_source,$self->new_source);
   
   # List of all unique_constraint_names in old, new, or both:
-  my @consts = uniq(
-    try{$o->unique_constraint_names},
-    try{$n->unique_constraint_names}
-  );
+  my @consts = uniq(try{keys %{$o->{constraints}}}, try{keys %{$n->{constraints}}});
   
   return {
-    map { 
-      my @o_uc_cols = try{$o->unique_constraint_columns($_)};
-      my @n_uc_cols = try{$n->unique_constraint_columns($_)};
-      $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
-        name        => $_,
-        old_info    => scalar(@o_uc_cols) > 0 ? { columns => \@o_uc_cols } : undef,
-        new_info    => scalar(@n_uc_cols) > 0 ? { columns => \@n_uc_cols } : undef,
-        _source_diff => $self,
-      ) 
-    } @consts
+    map { $_ => DBIx::Class::Schema::Diff::InfoPacket->new(
+      name        => $_,
+      old_info    => $o ? $o->{constraints}{$_} : undef,
+      new_info    => $n ? $n->{constraints}{$_} : undef,
+      _source_diff => $self,
+    ) } @consts
   };
   
 }, init_arg => undef, isa => HashRef;
@@ -125,16 +93,11 @@ has 'constraints', is => 'ro', lazy => 1, default => sub {
 has 'isa_diff', is => 'ro', lazy => 1, default => sub {
   my $self = shift;
 
-  my ($o,$n) = ($self->old_class,$self->new_class);
-  my $o_isa = $o ? mro::get_linear_isa($o) : [];
-  my $n_isa = $n ? mro::get_linear_isa($n) : [];
+  my ($o,$n) = ($self->old_source,$self->new_source);
 
-  # Normalize namespaces which match the old/new schema class
-  my $o_class = $self->_schema_diff->old_schemaclass;
-  my $n_class = $self->_schema_diff->new_schemaclass;
-  $_ =~ s/^${n_class}/\*/ for (@$n_isa);
-  $_ =~ s/^${o_class}/\*/ for (@$o_isa);
-
+  my $o_isa = $o ? $o->{isa} : [];
+  my $n_isa = $n ? $n->{isa} : [];
+  
   my $AD = Array::Diff->diff($o_isa,$n_isa);
   my $diff = [
     (map {'-'.$_} @{$AD->deleted}),
@@ -171,8 +134,8 @@ has 'diff', is => 'ro', lazy => 1, default => sub {
   } values %{$self->constraints} };
   delete $diff->{constraints} unless (keys %{$diff->{constraints}} > 0);
   
-  my $o_tbl = try{$self->old_source->from};
-  my $n_tbl = try{$self->new_source->from};
+  my $o_tbl = try{$self->old_source->{table_name}};
+  my $n_tbl = try{$self->new_source->{table_name}};
   $diff->{table_name} = $n_tbl unless ($self->_is_eq($o_tbl,$n_tbl));
   
   $diff->{isa} = $self->isa_diff if ($self->isa_diff);
