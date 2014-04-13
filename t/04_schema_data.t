@@ -85,7 +85,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Actor",
+        "{schema_class}::Result::Actor",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -118,11 +118,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::FilmActor",
+          class => "{schema_class}::Result::FilmActor",
           cond => {
             "foreign.actor_id" => "self.actor_id"
           },
-          source => "TestSchema::Sakila::Result::FilmActor"
+          source => "{schema_class}::Result::FilmActor"
         }
       },
       table_name => "actor"
@@ -155,7 +155,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::ActorInfo",
+        "{schema_class}::Result::ActorInfo",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -246,7 +246,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Address",
+        "{schema_class}::Result::Address",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -284,11 +284,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::City",
+          class => "{schema_class}::Result::City",
           cond => {
             "foreign.city_id" => "self.city_id"
           },
-          source => "TestSchema::Sakila::Result::City"
+          source => "{schema_class}::Result::City"
         },
         customers => {
           attrs => {
@@ -297,11 +297,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Customer",
+          class => "{schema_class}::Result::Customer",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Customer"
+          source => "{schema_class}::Result::Customer"
         },
         staffs => {
           attrs => {
@@ -310,11 +310,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Staff",
+          class => "{schema_class}::Result::Staff",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Staff"
+          source => "{schema_class}::Result::Staff"
         },
         stores => {
           attrs => {
@@ -323,11 +323,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Store",
+          class => "{schema_class}::Result::Store",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Store"
+          source => "{schema_class}::Result::Store"
         }
       },
       table_name => "address"
@@ -367,7 +367,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Category",
+        "{schema_class}::Result::Category",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -400,11 +400,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::FilmCategory",
+          class => "{schema_class}::Result::FilmCategory",
           cond => {
             "foreign.category_id" => "self.category_id"
           },
-          source => "TestSchema::Sakila::Result::FilmCategory"
+          source => "{schema_class}::Result::FilmCategory"
         }
       },
       table_name => "category"
@@ -452,7 +452,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::City",
+        "{schema_class}::Result::City",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -485,11 +485,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Address",
+          class => "{schema_class}::Result::Address",
           cond => {
             "foreign.city_id" => "self.city_id"
           },
-          source => "TestSchema::Sakila::Result::Address"
+          source => "{schema_class}::Result::Address"
         },
         country => {
           attrs => {
@@ -503,11 +503,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Country",
+          class => "{schema_class}::Result::Country",
           cond => {
             "foreign.country_id" => "self.country_id"
           },
-          source => "TestSchema::Sakila::Result::Country"
+          source => "{schema_class}::Result::Country"
         }
       },
       table_name => "city"
@@ -547,7 +547,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Country",
+        "{schema_class}::Result::Country",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -580,11 +580,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::City",
+          class => "{schema_class}::Result::City",
           cond => {
             "foreign.country_id" => "self.country_id"
           },
-          source => "TestSchema::Sakila::Result::City"
+          source => "{schema_class}::Result::City"
         }
       },
       table_name => "country"
@@ -665,7 +665,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Customer",
+        "{schema_class}::Result::Customer",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -703,11 +703,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Address",
+          class => "{schema_class}::Result::Address",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Address"
+          source => "{schema_class}::Result::Address"
         },
         payments => {
           attrs => {
@@ -716,11 +716,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Payment",
+          class => "{schema_class}::Result::Payment",
           cond => {
             "foreign.customer_id" => "self.customer_id"
           },
-          source => "TestSchema::Sakila::Result::Payment"
+          source => "{schema_class}::Result::Payment"
         },
         rentals => {
           attrs => {
@@ -729,11 +729,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Rental",
+          class => "{schema_class}::Result::Rental",
           cond => {
             "foreign.customer_id" => "self.customer_id"
           },
-          source => "TestSchema::Sakila::Result::Rental"
+          source => "{schema_class}::Result::Rental"
         },
         store => {
           attrs => {
@@ -747,11 +747,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Store",
+          class => "{schema_class}::Result::Store",
           cond => {
             "foreign.store_id" => "self.store_id"
           },
-          source => "TestSchema::Sakila::Result::Store"
+          source => "{schema_class}::Result::Store"
         }
       },
       table_name => "customer"
@@ -814,7 +814,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::CustomerList",
+        "{schema_class}::Result::CustomerList",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -960,7 +960,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Film",
+        "{schema_class}::Result::Film",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -993,11 +993,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::FilmActor",
+          class => "{schema_class}::Result::FilmActor",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::FilmActor"
+          source => "{schema_class}::Result::FilmActor"
         },
         film_categories => {
           attrs => {
@@ -1006,11 +1006,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::FilmCategory",
+          class => "{schema_class}::Result::FilmCategory",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::FilmCategory"
+          source => "{schema_class}::Result::FilmCategory"
         },
         inventories => {
           attrs => {
@@ -1019,11 +1019,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Inventory",
+          class => "{schema_class}::Result::Inventory",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::Inventory"
+          source => "{schema_class}::Result::Inventory"
         },
         language => {
           attrs => {
@@ -1037,11 +1037,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Language",
+          class => "{schema_class}::Result::Language",
           cond => {
             "foreign.language_id" => "self.language_id"
           },
-          source => "TestSchema::Sakila::Result::Language"
+          source => "{schema_class}::Result::Language"
         },
         original_language => {
           attrs => {
@@ -1056,11 +1056,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Language",
+          class => "{schema_class}::Result::Language",
           cond => {
             "foreign.language_id" => "self.original_language_id"
           },
-          source => "TestSchema::Sakila::Result::Language"
+          source => "{schema_class}::Result::Language"
         }
       },
       table_name => "film"
@@ -1104,7 +1104,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::FilmActor",
+        "{schema_class}::Result::FilmActor",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1142,11 +1142,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Actor",
+          class => "{schema_class}::Result::Actor",
           cond => {
             "foreign.actor_id" => "self.actor_id"
           },
-          source => "TestSchema::Sakila::Result::Actor"
+          source => "{schema_class}::Result::Actor"
         },
         film => {
           attrs => {
@@ -1160,11 +1160,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Film",
+          class => "{schema_class}::Result::Film",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::Film"
+          source => "{schema_class}::Result::Film"
         }
       },
       table_name => "film_actor"
@@ -1208,7 +1208,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::FilmCategory",
+        "{schema_class}::Result::FilmCategory",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1246,11 +1246,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Category",
+          class => "{schema_class}::Result::Category",
           cond => {
             "foreign.category_id" => "self.category_id"
           },
-          source => "TestSchema::Sakila::Result::Category"
+          source => "{schema_class}::Result::Category"
         },
         film => {
           attrs => {
@@ -1264,11 +1264,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Film",
+          class => "{schema_class}::Result::Film",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::Film"
+          source => "{schema_class}::Result::Film"
         }
       },
       table_name => "film_category"
@@ -1335,7 +1335,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::FilmList",
+        "{schema_class}::Result::FilmList",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1387,7 +1387,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::FilmText",
+        "{schema_class}::Result::FilmText",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1461,7 +1461,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Inventory",
+        "{schema_class}::Result::Inventory",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1499,11 +1499,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Film",
+          class => "{schema_class}::Result::Film",
           cond => {
             "foreign.film_id" => "self.film_id"
           },
-          source => "TestSchema::Sakila::Result::Film"
+          source => "{schema_class}::Result::Film"
         },
         rentals => {
           attrs => {
@@ -1512,11 +1512,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Rental",
+          class => "{schema_class}::Result::Rental",
           cond => {
             "foreign.inventory_id" => "self.inventory_id"
           },
-          source => "TestSchema::Sakila::Result::Rental"
+          source => "{schema_class}::Result::Rental"
         },
         store => {
           attrs => {
@@ -1530,11 +1530,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Store",
+          class => "{schema_class}::Result::Store",
           cond => {
             "foreign.store_id" => "self.store_id"
           },
-          source => "TestSchema::Sakila::Result::Store"
+          source => "{schema_class}::Result::Store"
         }
       },
       table_name => "inventory"
@@ -1574,7 +1574,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Language",
+        "{schema_class}::Result::Language",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1607,11 +1607,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Film",
+          class => "{schema_class}::Result::Film",
           cond => {
             "foreign.language_id" => "self.language_id"
           },
-          source => "TestSchema::Sakila::Result::Film"
+          source => "{schema_class}::Result::Film"
         },
         film_original_languages => {
           attrs => {
@@ -1620,11 +1620,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Film",
+          class => "{schema_class}::Result::Film",
           cond => {
             "foreign.original_language_id" => "self.language_id"
           },
-          source => "TestSchema::Sakila::Result::Film"
+          source => "{schema_class}::Result::Film"
         }
       },
       table_name => "language"
@@ -1691,7 +1691,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::NicerButSlowerFilmList",
+        "{schema_class}::Result::NicerButSlowerFilmList",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1788,7 +1788,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Payment",
+        "{schema_class}::Result::Payment",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1826,11 +1826,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Customer",
+          class => "{schema_class}::Result::Customer",
           cond => {
             "foreign.customer_id" => "self.customer_id"
           },
-          source => "TestSchema::Sakila::Result::Customer"
+          source => "{schema_class}::Result::Customer"
         },
         rental => {
           attrs => {
@@ -1845,11 +1845,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Rental",
+          class => "{schema_class}::Result::Rental",
           cond => {
             "foreign.rental_id" => "self.rental_id"
           },
-          source => "TestSchema::Sakila::Result::Rental"
+          source => "{schema_class}::Result::Rental"
         },
         staff => {
           attrs => {
@@ -1863,11 +1863,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Staff",
+          class => "{schema_class}::Result::Staff",
           cond => {
             "foreign.staff_id" => "self.staff_id"
           },
-          source => "TestSchema::Sakila::Result::Staff"
+          source => "{schema_class}::Result::Staff"
         }
       },
       table_name => "payment"
@@ -1950,7 +1950,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Rental",
+        "{schema_class}::Result::Rental",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -1988,11 +1988,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Customer",
+          class => "{schema_class}::Result::Customer",
           cond => {
             "foreign.customer_id" => "self.customer_id"
           },
-          source => "TestSchema::Sakila::Result::Customer"
+          source => "{schema_class}::Result::Customer"
         },
         inventory => {
           attrs => {
@@ -2006,11 +2006,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Inventory",
+          class => "{schema_class}::Result::Inventory",
           cond => {
             "foreign.inventory_id" => "self.inventory_id"
           },
-          source => "TestSchema::Sakila::Result::Inventory"
+          source => "{schema_class}::Result::Inventory"
         },
         payments => {
           attrs => {
@@ -2019,11 +2019,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Payment",
+          class => "{schema_class}::Result::Payment",
           cond => {
             "foreign.rental_id" => "self.rental_id"
           },
-          source => "TestSchema::Sakila::Result::Payment"
+          source => "{schema_class}::Result::Payment"
         },
         staff => {
           attrs => {
@@ -2037,11 +2037,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Staff",
+          class => "{schema_class}::Result::Staff",
           cond => {
             "foreign.staff_id" => "self.staff_id"
           },
-          source => "TestSchema::Sakila::Result::Staff"
+          source => "{schema_class}::Result::Staff"
         }
       },
       table_name => "rental"
@@ -2064,7 +2064,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::SaleByFilmCategory",
+        "{schema_class}::Result::SaleByFilmCategory",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -2117,7 +2117,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::SaleByStore",
+        "{schema_class}::Result::SaleByStore",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -2225,7 +2225,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Staff",
+        "{schema_class}::Result::Staff",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -2263,11 +2263,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Address",
+          class => "{schema_class}::Result::Address",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Address"
+          source => "{schema_class}::Result::Address"
         },
         payments => {
           attrs => {
@@ -2276,11 +2276,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Payment",
+          class => "{schema_class}::Result::Payment",
           cond => {
             "foreign.staff_id" => "self.staff_id"
           },
-          source => "TestSchema::Sakila::Result::Payment"
+          source => "{schema_class}::Result::Payment"
         },
         rentals => {
           attrs => {
@@ -2289,11 +2289,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Rental",
+          class => "{schema_class}::Result::Rental",
           cond => {
             "foreign.staff_id" => "self.staff_id"
           },
-          source => "TestSchema::Sakila::Result::Rental"
+          source => "{schema_class}::Result::Rental"
         },
         store => {
           attrs => {
@@ -2303,11 +2303,11 @@ sub _sakila_data_target {{
             cascade_update => 1,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Store",
+          class => "{schema_class}::Result::Store",
           cond => {
             "foreign.manager_staff_id" => "self.staff_id"
           },
-          source => "TestSchema::Sakila::Result::Store"
+          source => "{schema_class}::Result::Store"
         }
       },
       table_name => "staff"
@@ -2364,7 +2364,7 @@ sub _sakila_data_target {{
       },
       constraints => {},
       isa => [
-        "TestSchema::Sakila::Result::StaffList",
+        "{schema_class}::Result::StaffList",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -2443,7 +2443,7 @@ sub _sakila_data_target {{
         }
       },
       isa => [
-        "TestSchema::Sakila::Result::Store",
+        "{schema_class}::Result::Store",
         "DBIx::Class::InflateColumn::DateTime",
         "DBIx::Class::Core",
         "DBIx::Class::Relationship",
@@ -2481,11 +2481,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Address",
+          class => "{schema_class}::Result::Address",
           cond => {
             "foreign.address_id" => "self.address_id"
           },
-          source => "TestSchema::Sakila::Result::Address"
+          source => "{schema_class}::Result::Address"
         },
         customers => {
           attrs => {
@@ -2494,11 +2494,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Customer",
+          class => "{schema_class}::Result::Customer",
           cond => {
             "foreign.store_id" => "self.store_id"
           },
-          source => "TestSchema::Sakila::Result::Customer"
+          source => "{schema_class}::Result::Customer"
         },
         inventories => {
           attrs => {
@@ -2507,11 +2507,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Inventory",
+          class => "{schema_class}::Result::Inventory",
           cond => {
             "foreign.store_id" => "self.store_id"
           },
-          source => "TestSchema::Sakila::Result::Inventory"
+          source => "{schema_class}::Result::Inventory"
         },
         manager_staff => {
           attrs => {
@@ -2525,11 +2525,11 @@ sub _sakila_data_target {{
             on_update => "CASCADE",
             undef_on_null_fk => 1
           },
-          class => "TestSchema::Sakila::Result::Staff",
+          class => "{schema_class}::Result::Staff",
           cond => {
             "foreign.staff_id" => "self.manager_staff_id"
           },
-          source => "TestSchema::Sakila::Result::Staff"
+          source => "{schema_class}::Result::Staff"
         },
         staffs => {
           attrs => {
@@ -2538,11 +2538,11 @@ sub _sakila_data_target {{
             cascade_delete => 0,
             join_type => "LEFT"
           },
-          class => "TestSchema::Sakila::Result::Staff",
+          class => "{schema_class}::Result::Staff",
           cond => {
             "foreign.store_id" => "self.store_id"
           },
-          source => "TestSchema::Sakila::Result::Staff"
+          source => "{schema_class}::Result::Staff"
         }
       },
       table_name => "store"

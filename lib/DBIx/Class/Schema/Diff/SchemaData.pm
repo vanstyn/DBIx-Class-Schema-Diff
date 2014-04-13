@@ -32,7 +32,7 @@ has 'data', is => 'ro', lazy => 1, default => sub {
 sub _gen_data {
   my ($self, $schema) = @_;
   
-  {
+  my $data = {
     schema_class => (blessed $schema),
     sources => {
       map {
@@ -64,7 +64,9 @@ sub _gen_data {
         }
       } $schema->sources 
     }
-  }
+  };
+  
+  return $self->_localize_deep_namespace_strings($data,$data->{schema_class});
 }
 
 
@@ -106,7 +108,30 @@ sub _coerce_deep_unsafe_refs {
   }
 }
 
-
+sub _localize_deep_namespace_strings {
+  my ($self, $v, $ns) = @_;
+  my $rt = ref($v);
+  if($rt) {
+    if($rt eq 'HASH') {
+      return { map {
+        $_ => $self->_localize_deep_namespace_strings($v->{$_},$ns)
+      } keys %$v };
+    }
+    elsif($rt eq 'ARRAY') {
+      return [ map {
+        $self->_localize_deep_namespace_strings($_,$ns)
+      } @$v ];
+    }
+    else {
+      return $v;
+    }
+  }
+  else {
+    # swap the namespace prefix string for literal '{schema_class}':
+    $v =~ s/^${ns}/\{schema_class\}/ if($v && $ns && $v ne $ns);
+    return $v;
+  }
+}
 
 1;
 
