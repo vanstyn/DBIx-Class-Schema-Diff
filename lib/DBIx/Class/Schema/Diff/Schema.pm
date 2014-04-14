@@ -3,8 +3,25 @@ use strict;
 use warnings;
 
 # ABSTRACT: Simple Diffing of DBIC Schemas
+# VERSION
 
-our $VERSION = 0.01;
+#
+# TODO (#2)
+#
+# The structure/design of this class (+ Source and InfoPacket)
+# made more sense before adding the 'SchemaData' feature (#1)
+# when these classes were handling both the data extraction from
+# DBIC and the diffing tasks of the individual section of data.
+# Now the data extraction work is done in SchemaData leaving only
+# simple static hashrefs to be dealt with here. These classes should
+# probably now be consolidated and generalized. I'm not sure
+# how important this is though since everything is already working.
+# Later on, if more types of data need to be diffed besides the
+# 5 current ones (columns,relationships,constraints,table_name,isa),
+# or it is useful to make that more dynamic, such as to be able to
+# add more data-points on the fly, then taking the time for 
+# refactoring these will make more sense... (2014-04-14 by vanstyn)
+# 
 
 use Moo;
 with 'DBIx::Class::Schema::Diff::Role::Common';
