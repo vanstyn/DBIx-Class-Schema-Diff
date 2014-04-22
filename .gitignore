@@ -1,1 +1,2 @@
 t/var/tmp/*
+DBIx-Class-Schema-Diff-*

@@ -170,3 +170,31 @@ sub _coerce_schema_data {
 
 
 1;
+
+
+__END__
+
+=pod
+
+=head1 NAME
+
+DBIx::Class::Schema::Diff::Schema::Role::Common - common role for DBIx::Class::Schema::Diff
+
+=head1 DESCRIPTION
+
+This role/class is used internally by L<DBIx::Class::Schema::Diff> and is not meant to be called directly. 
+
+Please refer to the main L<DBIx::Class::Schema::Diff> documentation for more info.
+
+=head1 AUTHOR
+
+Henry Van Styn <vanstyn@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by IntelliTree Solutions llc.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

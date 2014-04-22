@@ -84,26 +84,29 @@ sub _schema_diff { (shift) }
 
 1;
 
-
 __END__
+
+=pod
 
 =head1 NAME
 
-DBIx::Class::Schema::Diff - Simple Diffing of DBIC Schemas
-
-=head1 SYNOPSIS
-
- use DBIx::Class::Schema::Diff;
-
- my $Diff = DBIx::Class::Schema::Diff->new(
-   old_schema => 'My::Schema1',
-   new_schema => 'My::Schema2'
- );
- 
- my $hash = $Diff->diff;
+DBIx::Class::Schema::Diff::Schema - internal object class for DBIx::Class::Schema::Diff
 
 =head1 DESCRIPTION
 
+This class is used internally by L<DBIx::Class::Schema::Diff> and is not meant to be called directly. 
 
+Please refer to the main L<DBIx::Class::Schema::Diff> documentation for more info.
+
+=head1 AUTHOR
+
+Henry Van Styn <vanstyn@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2014 by IntelliTree Solutions llc.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

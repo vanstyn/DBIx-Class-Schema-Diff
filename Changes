@@ -1,0 +1,4 @@
+Revision history for perl module DBIx::Class::Schema::Diff
+
+1.00 2014-04-22
+    - Initial release
