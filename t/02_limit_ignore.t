@@ -18,6 +18,13 @@ my $s3  = TestSchema::Sakila3->connect(@connect);
 
 sub NewD { DBIx::Class::Schema::Diff->new(@_) } 
 
+# Note: the commented out 'ignore' and 'limit' params below were
+# options in an earlier version of the API that got scraped for the
+# more flexible 'filter' feature. These tests were originally written
+# for the limit/ignore API and later converted to equivelent code
+# using filters. The original options have been left (commented out)
+# for reference...
+
 is_deeply(
   NewD( 
     old_schema => $s1, new_schema => $s3, 
