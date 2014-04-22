@@ -14,6 +14,7 @@ use Module::Runtime;
 use Try::Tiny;
 use List::Util;
 use Hash::Layout;
+use Array::Diff;
 
 use DBIx::Class::Schema::Diff::Schema;
 use DBIx::Class::Schema::Diff::Filter;
@@ -230,8 +231,6 @@ isa
 
 =back
 
-...
-
 =head1 METHODS
 
 =head2 new
@@ -276,6 +275,58 @@ Works like C<filter()> but the arguments exclude differences rather than restric
 See L<FILTERING|DBIx::Class::Schema::Diff#FILTERING> for filter argument syntax.
 
 =head1 FILTERING
+
+The L<filter|DBIx::Class::Schema::Diff#filter> (and inverse L<filter_out|DBIx::Class::Schema::Diff#filter_out>) 
+method(s) is analogous to the L<search|DBIx::Class::ResultSet#search>
+method of L<ResultSet|DBIx::Class::ResultSet> in that it is chainable (returns a new object instance) and each 
+call further restricts the data returned. Except, instead of building up an SQL query, it filters out the 
+data in the L<diff> HashRef. The filter argument(s) define an expression which matches specific parts of 
+the C<diff> packet. In the case of C<filter()>, all data that B<does not> match the expression is removed, 
+while in the case of C<filter_out()>, all data that B<does> match the expression is removed.
+
+The filter expression is designed to be simple and declarative. It can be supplied as a list of strings
+which match either broadly or narrowly the schema data to consider. The filter strings follow this
+general pattern:
+
+ '<source>:<type>/<id>'
+
+Where C<source> is the name of a specific schema source, C<type> is the type of data, which is currently 
+one of five (5) supported types, I<'columns'>, I<'relationships'>, I<'constraints'>, I<'isa'> or I<'table_name'>,
+and C<id> is the name of an item, specific to that type, if applicable. 
+
+For instance, this expression would match only the I<column> named 'timestamp' in the source named 'Artist':
+
+ 'Artist:column/timestamp'
+
+Not all types have sub-items (only I<columns>, I<relationships> and I<constraints>). The I<isa> and I<table_name>
+types are only source-specific. So, for example, to see changes to I<isa> (i.e. differences in inheritance and/or
+loaded components in the result class) you would use the following:
+
+ 'Artist:isa'
+
+I<columns> and I<relationships>, on the other hand, can have changes to their attributes (column_info/relationship_info) 
+which can also be targeted selectively. For instance, to match only changes in C<size> of a specific column:
+
+ 'Artist:column/timestamp.size'
+
+Attributes with sub hashes can be matched as well. For example, to match only changes in C<list> I<within>
+C<extra> (which is where DBIC puts the list of possible values for enum columns):
+
+ 'Artist:column/my_enum.extra.list'
+
+The structure is specific to the type. The dot-separated path applies to the data returned by L<column_info|DBIx::Class::ResultSource#column_info> for columns and
+L<relationship_info|DBIx::Class::ResultSource#relationship_info> for relationships. For instance, 
+the following matches changes to C<cascade_delete> of a specific relationship 'some_rel' in the 'Artist'
+source:
+
+ 'Artist:relationship/some_rel.attrs.cascade_delete'
+
+...
+
+Internally, L<Hash::Layout> is used to process the filter arguments.
+
+
+=head2 event filtering
 
 ...
 

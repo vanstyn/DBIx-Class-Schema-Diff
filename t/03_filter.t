@@ -456,32 +456,83 @@ is(
   'Filtering on a invalid keyword results in an empty diff (undef)'
 );
 
-is_deeply(
-  $Diff->filter('*.extra')->diff,
-  {
-    Film => {
-      _event => "changed",
-      columns => {
-        rating => {
-          _event => "changed",
-          diff => {
-            extra => {
-              list => [
-                "G",
-                "PG",
-                "PG-13",
-                "R",
-                "NC-17",
-                "TV-MA"
-              ]
-            }
+my $target_extra_list = {
+  Film => {
+    _event => "changed",
+    columns => {
+      rating => {
+        _event => "changed",
+        diff => {
+          extra => {
+            list => [
+              "G",
+              "PG",
+              "PG-13",
+              "R",
+              "NC-17",
+              "TV-MA"
+            ]
           }
         }
       }
     }
-  },
+  }
+};
+
+is_deeply(
+  $Diff->filter('*.extra')->diff,
+  $target_extra_list,
   "Filter to only column/relationship info with 'extra'"
 );
+
+is_deeply(
+  $Diff->filter('*.extra.list')->diff,
+  $target_extra_list,
+  "Filter to only column/relationship info with 'extra.list'"
+);
+
+is_deeply(
+  $Diff->filter('columns/*.extra.list')->diff,
+  $target_extra_list,
+  "Filter to only column info with 'extra.list'"
+);
+
+is_deeply(
+  $Diff->filter('Film:*.extra')->diff,
+  $target_extra_list,
+  "Filter to only column/relationship info with 'extra' in 'Film'"
+);
+
+is_deeply(
+  $Diff->filter('Film:columns/*.extra')->diff,
+  $target_extra_list,
+  "Filter to only column info with 'extra' in 'Film'"
+);
+
+is_deeply(
+  $Diff->filter('Film:columns/rating.extra')->diff,
+  $target_extra_list,
+  "Filter to only 'rating' column info with 'extra' in 'Film'"
+);
+
+is_deeply(
+  $Diff->filter('Film:columns/rating.extra.list')->diff,
+  $target_extra_list,
+  "Filter to only 'rating' column info with 'extra.list' in 'Film'"
+);
+
+is_deeply(
+  $Diff->filter('columns/rating.extra.list')->diff,
+  $target_extra_list,
+  "Filter to only 'rating' column info with 'extra.list'"
+);
+
+is_deeply(
+  $Diff->filter('rating.extra.list')->diff,
+  $target_extra_list,
+  "Filter to only 'rating' column/relationship info with 'extra.list'"
+);
+
 
 is_deeply(
   $Diff->filter(qw(isa *.is_nullable *.size))->diff,
