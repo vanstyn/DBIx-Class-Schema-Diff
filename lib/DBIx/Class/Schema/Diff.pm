@@ -161,6 +161,9 @@ DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas
    new_schema => 'My::Schema1'
  );
  
+
+Filtering the diff:
+
  
  # Get all differences (hash structure):
  my $hash = $D->diff;
@@ -204,8 +207,8 @@ DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas
 
 =head1 DESCRIPTION
 
-General-purpose schema differ for L<DBIx::Class>. Currently tracks changes in 5 kinds of data
-within the Result Classes/Sources of the Schemas:
+General-purpose schema differ for L<DBIx::Class> to identify changes between two DBIC Schemas. 
+Currently tracks added/deleted/changed events and deep diffing across 5 named types of source data:
 
 =over
 
@@ -230,6 +233,26 @@ table_name
 isa
 
 =back
+
+The changes which are detected are stored in a HashRef which can be accessed by calling 
+L<diff|DBIx::Class::Schema::Diff#diff>. This data packet, which has a format that is specific to 
+this module, can either be inspected directly, or I<filtered> to be able to check for specific 
+changes as boolean test(s), making it unnecessary to know the internal diff structure for many 
+use-cases (since if there are no changes, or no changes left after being filtered, C<diff> returns 
+false/undef - see the L<FILTERING|DBIx::Class::Schema::Diff#FILTERING> section for more info).
+
+This tool attempts to be simple and flexible with a straightforward, "DWIM" API. It is meant
+to be used programmatically in dynamic scenarios where schema changes are occurring but are not well
+suited for L<DBIx::Class::Migration> or L<DBIx::Class::DeploymentHandler> for whatever reasons, or
+some other event/action needs to take place based on certain types of changes (note that this tool 
+is NOT meant to be a replacement for Migrations/DH). 
+
+It is also useful as a general debugging/development tool, and was designed with this in mind to 
+be "handy" and not need a lot of setup/RTFM to use.
+
+This tool is different from L<SQL::Translator::Diff> in that it compares DBIC schemas at the 
+I<class/code> level, not the underlying DDL, nor does it attempt to modify one schema to match
+the other (although, it could certainly be used to write a tool that did).
 
 =head1 METHODS
 
@@ -259,7 +282,68 @@ as C<old_schema>.
 
 =head2 diff
 
-Returns the differences between the the schemas as a hash structure, or C<undef> if there are none.
+Returns the differences between the the two schemas as a HashRef structure, or C<undef> if there are none.
+
+The HashRef is divided first by source name, then by type, with the special C<_event> key identifying
+the type of change (added, deleted or changed) at both the source and the type level. For 'changed' events
+within types, a deeper, type-specific diff HashRef is provided (with column_info/relationship_info diffs 
+generated using L<Hash::Diff>).
+
+Here is an example of what a diff packet (with a sampling of lots of different kinds of changes) 
+might look like:
+
+ # Example diff with sample of all 3 kinds of events and all 5 types:
+ {
+   Address => {
+     _event => "changed",
+     isa => [
+       "-Some::Removed::Component",
+       "+Test::DummyClass"
+     ],
+     relationships => {
+       customers2 => {
+         _event => "added"
+       },
+       staffs => {
+         _event => "changed",
+         diff => {
+           attrs => {
+             cascade_delete => 1
+           }
+         }
+       }
+     }
+   },
+   City => {
+     _event => "changed",
+     table_name => "city1"
+   },
+   FilmCategory => {
+     _event => "changed",
+     columns => {
+       last_update => {
+         _event => "changed",
+         diff => {
+           is_nullable => 1
+         }
+       }
+     }
+   },
+   FooBar => {
+     _event => "added"
+   },
+   FooBaz => {
+     _event => "deleted"
+   },
+   Store => {
+     _event => "changed",
+     constraints => {
+       idx_unique_store_manager => {
+         _event => "added"
+       }
+     }
+   }
+ }
 
 =head2 filter
 
@@ -279,9 +363,10 @@ See L<FILTERING|DBIx::Class::Schema::Diff#FILTERING> for filter argument syntax.
 The L<filter|DBIx::Class::Schema::Diff#filter> (and inverse L<filter_out|DBIx::Class::Schema::Diff#filter_out>) 
 method is analogous to ResultSet's L<search_rs|DBIx::Class::ResultSet#search_rs> in that it is chainable 
 (i.e. returns a new object instance) and each call further restricts the data considered. But, instead of 
-building up an SQL query, it filters the data in the HashRef returned by C<diff()>. The filter 
-argument(s) define an expression which matches specific parts of the C<diff> packet. In the case of 
-C<filter()>, all data that B<does not> match the expression is removed from the HashRef (of the returned,
+building up an SQL query, it filters the data in the HashRef returned by L<diff|DBIx::Class::Schema::Diff#diff>. 
+
+The filter argument(s) define an expression which matches specific parts of the C<diff> packet. In the case of 
+C<filter()>, all data that B<does not> match the expression is removed from the diff HashRef (of the returned,
 new object), while in the case of C<filter_out()>, all data that B<does> match the expression is removed.
 
 The filter expression is designed to be simple and declarative. It can be supplied as a list of strings
@@ -303,8 +388,9 @@ loaded components in the result class) you could use the following:
 
  'Artist:isa'
 
-I<columns> and I<relationships>, on the other hand, can have changes to their attributes (column_info/relationship_info) 
-which can also be targeted selectively. For instance, to match only changes in C<size> of a specific column:
+On the other hand, not only are there multiple I<columns> and I<relationships> within each source, but
+each can have specific changes to their attributes (column_info/relationship_info) which can also be 
+targeted selectively. For instance, to match only changes in C<size> of a specific column:
 
  'Artist:column/timestamp.size'
 
@@ -374,26 +460,88 @@ Internally, L<Hash::Layout> is used to process the filter arguments.
 
 =head2 event filtering
 
-Besides matching specific parts of the schema, you can also filter by I<event>, which are I<'added'>, 
-I<'deleted'> or I<'changed'>.
+Besides matching specific parts of the schema, you can also filter by I<event>, which is either 
+I<'added'>, I<'deleted'> or I<'changed'> at both the source and type level (i.e. the event of a 
+new column is 'added' at the type level, but 'changed' at the source level).
 
-...
+Filtering by event requires passing a HashRef argument to filter/filter_out, with the special
+C<'events'> key matching 'type' events, and C<'source_events'> matching 'source' events. Both accept
+either a string (when specifying only one event) or an ArrayRef:
+
+ # Limit type (i.e. columns, relationships, etc) events to 'added'
+ $D = $D->filter({ events => 'added' });
+ 
+ # Exclude added and deleted sources:
+ $D = $D->filter_out({ source_events => ['added','deleted'] });
+ 
+ # Also excludes added and deleted sources:
+ $D = $D->filter({ source_events => ['changed'] });
+
 
 =head1 EXAMPLES
 
-...
+For examples, see the L<SYNOPSIS|DBIx::Class::Schema::Diff#SYNOPSIS> and also the unit tests in C<t/>
+which has lots of working examples.
 
-For more examples, see the following:
+=head1 BUGS/LIMITATIONS
+
+I'm not aware of any bugs at this point (although I'm sure there are some), but there are 
+several things to be aware of in general when using this tool that are worth mentioning:
 
 =over
 
 =item *
 
-The SYNOPSIS
+Firstly, the diff packet is I<informational> only; it does not contain the information needed to
+"patch" anything, or see the previous and new values. It assumes you already/still have access to the
+old and new schemas to look up this info yourself. Its main purpose is simply to I<flag> which 
+items are changed.
 
 =item *
 
-The unit tests in C<t/>
+Also, there is no deeper "diff" for 'added' and 'deleted' events because it is redundant. For an added source,
+for example, you already know that every column, relationship, etc., that it contains is also "added" 
+(depending on your definition of "added"), so these are not included in the diff for the purpose of 
+reducing clutter. But, one side effect of this that you have to keep in mind is that when filtering 
+for all 'column' changes, for example, this will not include columns in added sources. This is just 
+a design decision made early on (and it can't be both ways). It just means if you want to check for
+the expanded definition of 'modified' columns, which include added/deleted via a source, you must also test
+for added/deleted sources.
+
+In a later version, an additional layer of sugar methods could be added to provide convenient access
+to some of these concepts.
+
+=item *
+
+Filter string arguments are I<NOT> glob patterns, so you can't do things like C<'Arti*'> to match
+sub-strings (this may be a worthwhile feature to add in a later version). The wildcard C<*> applies
+to whole items only.
+
+=item *
+
+Also, the special C<*> character can only be used in place of the predefined first 3 levels 
+(C<'*:*/*'>) and not within deeper column_info/relationship_info sub-hashes (so you can't match 
+C<'Artist:columns/foo.*.list'>). We're really splitting hairs at this point, but it is still worth 
+noting. (Internally, L<Hash::Layout> is used to process the filter arguments, so these limitations
+have to do with the design of that package which provides more-useful flexibility in other areas)
+
+=item *
+
+In many practical cases, differences in loaded components will produce many more changes than just
+'isa'. It depends on whether or not the components in question change the column/relationship infos. 
+One common example is L<InflateColumn::DateTime|DBIx::Class::InflateColumn::DateTime> which sets 
+inflator/deflators on all date columns. This is more of a feature than it is a limitation, but it 
+is something to keep in mind. If one side loads a component(s) like this but the other doesn't, 
+you'll have lots of differences to contend with that you might not actually care about. And, in 
+order to filter out these differences, you have to filter out a lot more than 'isa', which is 
+trivial. This is more about how DBIC works than anything else.
+
+One thing that I did to overcome this when there were lots of different loaded components that I
+couldn't do anything about was to deploy both sides to a temp SQLite file, then create new schemas
+from those files with L<Schema::Loader|DBIx::Class::Schema::Loader>, using the same options (and 
+thus the same loaded components), and then run the diff on the two I<new> schemas. This type of approach
+may not work in all scenarios; it obviously depends on what exactly you are trying to accomplish.
+
 
 =back
 
@@ -408,6 +556,14 @@ L<DBIx::Class>
 =item * 
 
 L<SQL::Translator::Diff>
+
+=item * 
+
+L<DBIx::Class::Migration>
+
+=item * 
+
+L<DBIx::Class::DeploymentHandler>
 
 =back
 
