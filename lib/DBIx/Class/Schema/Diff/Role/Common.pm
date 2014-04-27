@@ -148,11 +148,11 @@ sub _coerce_schema_data {
       return $v;
     }
     elsif($rt eq 'HASH') {
-      return DBIx::Class::Schema::Diff::SchemaData->new( data => $v );
+      return DBIx::Class::Schema::Diff::SchemaData->new({ data => $v });
     }
     else {
       # Assume all other ref types  are schema instances:
-      return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+      return DBIx::Class::Schema::Diff::SchemaData->new({ schema => $v });
     }
   }
   else {
@@ -161,10 +161,10 @@ sub _coerce_schema_data {
       if(-f $file) {
         # Assume it is a json file and try to decode it:
         my $data = decode_json($file->slurp);
-        return DBIx::Class::Schema::Diff::SchemaData->new( data => $data );
+        return DBIx::Class::Schema::Diff::SchemaData->new({ data => $data });
       }
     }
-    return DBIx::Class::Schema::Diff::SchemaData->new( schema => $v );
+    return DBIx::Class::Schema::Diff::SchemaData->new({ schema => $v });
   }
 }
 
