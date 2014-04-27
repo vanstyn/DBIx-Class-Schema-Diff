@@ -1,4 +1,8 @@
 Revision history for perl module DBIx::Class::Schema::Diff
 
+1.01 2014-04-27
+    - Setup for TravisCI
+    - Replaced 'JSON' with 'JSON::DWIW' for json encode/decode
+
 1.00 2014-04-22
     - Initial release
