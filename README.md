@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/vanstyn/DBIx-Class-Schema-Diff/badge.png?branch=master)](https://coveralls.io/r/vanstyn/DBIx-Class-Schema-Diff?branch=master)
+
 ## NAME
 
 DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas

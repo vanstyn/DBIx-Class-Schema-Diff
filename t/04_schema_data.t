@@ -2660,7 +2660,7 @@ sub _sakila_data_target { my $h = {
   };
   
   # Starting with the next release of DBIC (v0.082800) the new 'is_depends_on'
-  # attr is present in relationships. For backward compatability with earlier
+  # attr is present in relationships. For backward compatibility with earlier
   # versions, we need to go in and strip this attr out of the structure above
   #  (see:  https://github.com/dbsrgits/dbix-class/commit/d0cefd99a )
   if(DBIx::Class->VERSION <= 0.082700) {
