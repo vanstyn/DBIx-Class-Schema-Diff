@@ -5,6 +5,8 @@ use warnings;
 use FindBin '$Bin';
 use lib "$Bin/lib";
 
+require DBIx::Class;
+
 use Path::Class qw( dir file );
 my $var_dir = dir("$Bin/var");
 my $tmp_dir = dir($var_dir,"tmp");
@@ -53,9 +55,13 @@ is(
   "Diffing schema class against schema data from hash"
 );
 
+# (See 'is_depends_on' comment at the bottom of this file)
+my $json_file = DBIx::Class->VERSION <= 0.082700 ?
+  'sakila_schema_data_pre8280.json' : 'sakila_schema_data.json';
+  
 is(
   Diff->new(
-    old_schema => $var_dir->file('sakila_schema_data.json')->stringify,
+    old_schema => $var_dir->file($json_file)->stringify,
     new_schema => 'TestSchema::Sakila'
   )->diff,
   undef,
@@ -102,7 +108,7 @@ done_testing;
 
 
 # This is in a sub at the end just to prevent scrolling since its so long:
-sub _sakila_data_target {{
+sub _sakila_data_target { my $h = {
   schema_class => "TestSchema::Sakila",
   sources => {
     Actor => {
@@ -176,6 +182,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::FilmActor",
@@ -339,6 +346,7 @@ sub _sakila_data_target {{
               city_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -355,6 +363,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Customer",
@@ -368,6 +377,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Staff",
@@ -381,6 +391,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Store",
@@ -458,6 +469,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::FilmCategory",
@@ -543,6 +555,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Address",
@@ -558,6 +571,7 @@ sub _sakila_data_target {{
               country_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -638,6 +652,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::City",
@@ -758,6 +773,7 @@ sub _sakila_data_target {{
               address_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -774,6 +790,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Payment",
@@ -787,6 +804,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Rental",
@@ -802,6 +820,7 @@ sub _sakila_data_target {{
               store_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1051,6 +1070,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::FilmActor",
@@ -1064,6 +1084,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::FilmCategory",
@@ -1077,6 +1098,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Inventory",
@@ -1092,6 +1114,7 @@ sub _sakila_data_target {{
               language_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1110,6 +1133,7 @@ sub _sakila_data_target {{
               original_language_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             join_type => "LEFT",
             on_delete => "CASCADE",
@@ -1197,6 +1221,7 @@ sub _sakila_data_target {{
               actor_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1215,6 +1240,7 @@ sub _sakila_data_target {{
               film_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1301,6 +1327,7 @@ sub _sakila_data_target {{
               category_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1319,6 +1346,7 @@ sub _sakila_data_target {{
               film_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1554,6 +1582,7 @@ sub _sakila_data_target {{
               film_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1570,6 +1599,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Rental",
@@ -1585,6 +1615,7 @@ sub _sakila_data_target {{
               store_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1665,6 +1696,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Film",
@@ -1678,6 +1710,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Film",
@@ -1881,6 +1914,7 @@ sub _sakila_data_target {{
               customer_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -1899,6 +1933,7 @@ sub _sakila_data_target {{
               rental_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             join_type => "LEFT",
             on_delete => "CASCADE",
@@ -1918,6 +1953,7 @@ sub _sakila_data_target {{
               staff_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2043,6 +2079,7 @@ sub _sakila_data_target {{
               customer_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2061,6 +2098,7 @@ sub _sakila_data_target {{
               inventory_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2077,6 +2115,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Payment",
@@ -2092,6 +2131,7 @@ sub _sakila_data_target {{
               staff_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2318,6 +2358,7 @@ sub _sakila_data_target {{
               address_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2334,6 +2375,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Payment",
@@ -2347,6 +2389,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Rental",
@@ -2361,6 +2404,7 @@ sub _sakila_data_target {{
             cascade_copy => 0,
             cascade_delete => 0,
             cascade_update => 1,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Store",
@@ -2536,6 +2580,7 @@ sub _sakila_data_target {{
               address_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2552,6 +2597,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Customer",
@@ -2565,6 +2611,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Inventory",
@@ -2580,6 +2627,7 @@ sub _sakila_data_target {{
               manager_staff_id => 1
             },
             is_deferrable => 1,
+            is_depends_on => 1,
             is_foreign_key_constraint => 1,
             on_delete => "CASCADE",
             on_update => "CASCADE",
@@ -2596,6 +2644,7 @@ sub _sakila_data_target {{
             accessor => "multi",
             cascade_copy => 0,
             cascade_delete => 0,
+            is_depends_on => 0,
             join_type => "LEFT"
           },
           class => "{schema_class}::Result::Staff",
@@ -2608,7 +2657,21 @@ sub _sakila_data_target {{
       table_name => "store"
     }
   }
-}}
+  };
+  
+  # Starting with the next release of DBIC (v0.082800) the new 'is_depends_on'
+  # attr is present in relationships. For backward compatability with earlier
+  # versions, we need to go in and strip this attr out of the structure above
+  #  (see:  https://github.com/dbsrgits/dbix-class/commit/d0cefd99a )
+  if(DBIx::Class->VERSION <= 0.082700) {
+    for my $rsrc (values %{$h->{sources}}) {
+      my $rels = $rsrc->{relationships} or next;
+      delete $rels->{$_}{attrs}{is_depends_on} for (keys %$rels); 
+    }
+  }
+
+  return $h;
+}
 
 
 
