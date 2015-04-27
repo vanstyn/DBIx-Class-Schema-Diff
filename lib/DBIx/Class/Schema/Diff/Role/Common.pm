@@ -8,7 +8,7 @@ use Types::Standard qw(:all);
 use Scalar::Util qw(blessed);
 use List::MoreUtils qw(uniq);
 use Array::Diff;
-use JSON::DWIW;
+use JSON;
 use Path::Class qw(file);
 
 sub _types_list { qw(
@@ -160,7 +160,11 @@ sub _coerce_schema_data {
       my $file = file($v)->absolute;
       if(-f $file) {
         # Assume it is a json file and try to decode it:
-        my $data = JSON::DWIW::deserialize_file($file);
+        local $/;
+        open( my $fh, '<', $file ) or die "Could not open $file: $!";
+        my $json_text = <$fh>;
+        close $fh;
+        my $data = JSON::decode_json($json_text);
         return DBIx::Class::Schema::Diff::SchemaData->new({ data => $data });
       }
     }

@@ -12,7 +12,7 @@ use Module::Runtime;
 use Scalar::Util qw(blessed);
 use Data::Dumper::Concise;
 use Path::Class qw(file);
-use JSON::DWIW;
+use JSON;
 
 has 'schema', is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema'
@@ -48,7 +48,7 @@ sub source {
 
 sub dump_json {
   my $self = shift;
-  JSON::DWIW->to_json( $self->data => { pretty => 1 });
+  JSON::to_json( $self->data => { pretty => 1 });
 }
 
 sub dump_json_file {
@@ -58,7 +58,10 @@ sub dump_json_file {
   
   die "Target file '$file' already exists." if (-e $file);
   
-  JSON::DWIW->to_json_file( $self->data, $file, { pretty => 1 });
+  my $out_fh;
+  open $out_fh, '>', $file or die "Could not open $file: $!";
+  print $out_fh JSON::to_json( $self->data, { pretty => 1 });
+  close $out_fh;
   return -f $file ? 1 : 0;
 }
 
