@@ -1,5 +1,8 @@
 Revision history for perl module DBIx::Class::Schema::Diff
 
+1.03 2015-04-27
+    - Drop JSON::DWIW for Windows support [Michael Lackhoff] (#3)
+
 1.02 2014-08-09
     - Support attr changes in upcoming DBIC release (~0.08280)
     - Travis tweaks, added 5.20 worker
