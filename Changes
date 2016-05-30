@@ -1,5 +1,8 @@
 Revision history for perl module DBIx::Class::Schema::Diff
 
+1.04 2016-05-30
+    - Fix test failures due to upcoming DBIC @ISA changes (RIBASUSHI) #4
+
 1.03 2015-04-27
     - Drop JSON::DWIW for Windows support [Michael Lackhoff] (#3)
 
