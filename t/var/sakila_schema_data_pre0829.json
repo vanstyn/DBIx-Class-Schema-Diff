@@ -63,7 +63,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -193,7 +192,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -459,7 +457,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -668,7 +665,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -847,7 +843,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -934,7 +929,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1031,7 +1025,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1113,7 +1106,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1224,7 +1216,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1356,7 +1347,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1529,7 +1519,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1703,7 +1692,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1820,7 +1808,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -1948,7 +1935,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2012,7 +1998,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2103,7 +2088,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2243,7 +2227,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2387,7 +2370,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2586,7 +2568,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2767,7 +2748,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2849,7 +2829,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -2993,7 +2972,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
@@ -3070,7 +3048,6 @@
                             "DBIx::Class::Componentised",
                             "Class::C3::Componentised",
                             "DBIx::Class::AccessorGroup",
-                            "DBIx::Class::MethodAttributes",
                             "Class::Accessor::Grouped"
                         ],
                     "relationships":
