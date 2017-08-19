@@ -19,6 +19,12 @@ ok(
   "Initialize stand-alone SchemaData object using class name"
 );
 
+my $sig = 'schemsum-99a438a6df22065';
+is(
+  $SD1->fingerprint => $sig,
+  "Saw expected SchemaData fingerprint ($sig)"
+);
+
 ok(
   my $SD2 =  $SD1->prune('private_col_attrs'),
   "Initialize new SchemaData object via ->prune('private_col_attrs')"
@@ -27,6 +33,12 @@ ok(
 is_deeply( 
   $SD2->data => &_data_pruned_private_col_attrs,
   "Saw expected pruned Sakila schema data (1)"
+);
+
+$sig = 'schemsum-644d1615709c7d8';
+is(
+  $SD2->fingerprint => $sig,
+  "Saw expected pruned SchemaData fingerprint ($sig)"
 );
 
 ok(
@@ -40,7 +52,11 @@ is_deeply(
   "Saw expected pruned Sakila schema data (2)"
 );
 
-
+$sig = 'schemsum-30ba1112b1b42f5';
+is(
+  $SD3->fingerprint => $sig,
+  "Saw expected pruned (2) SchemaData fingerprint ($sig)"
+);
 
 
 done_testing;

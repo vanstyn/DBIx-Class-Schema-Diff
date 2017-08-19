@@ -10,10 +10,13 @@ with 'DBIx::Class::Schema::Diff::Role::Common';
 use Types::Standard qw(:all);
 use Module::Runtime;
 use Scalar::Util qw(blessed);
-use Data::Dumper::Concise;
 use Path::Class qw(file);
 use JSON;
 use Clone 'clone';
+use Digest::SHA1;
+
+use Data::Dumper;
+use Data::Dumper::Concise;
 
 has 'schema', is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema'
@@ -238,6 +241,27 @@ sub _prune_whole_source_key {
 }
 
 
+sub fingerprint {
+  my $self = shift;
+  my $sum = Digest::SHA1->new->add( $self->_string_for_signature )->hexdigest;
+  join('-', 'schemsum', substr($sum,0,15) )
+}
+
+
+# So far this is the only thing I could find to produce a consistent string value across all
+# Travis tested perls (5.10,5.12,5.14,5.16,5.18,5.20,5.22,5.24,5.26)
+sub _string_for_signature {
+  my $self = shift;
+  
+  local $Data::Dumper::Maxdepth = 0;
+  Data::Dumper->new([ $self->data->{sources} ])
+   ->Purity(0)
+   ->Terse(1)
+   ->Indent(0)
+   ->Useqq(1)
+   ->Sortkeys(1)
+   ->Dump()
+}
 
 
 1;
@@ -326,6 +350,12 @@ specified information pruned/stripped from the C<data>. Currently supported prun
 =item private_col_attrs
 
 =back
+
+=head2 fingerprint
+
+Returns a sha1-based fingerprint string of the current data. Note that C<prune> will result in 
+different fingerprints. An example fingerprint is C<schemsum-448d754e40e09e0>. The 'schemsum' prefix
+is just for fun (and also provides an easy way to eyeball these values down the road).
 
 
 =head1 SEE ALSO
