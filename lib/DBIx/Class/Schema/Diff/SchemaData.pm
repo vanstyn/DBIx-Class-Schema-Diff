@@ -13,6 +13,7 @@ use Scalar::Util qw(blessed);
 use Data::Dumper::Concise;
 use Path::Class qw(file);
 use JSON;
+use Clone 'clone';
 
 has 'schema', is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema'
@@ -170,6 +171,75 @@ sub _localize_deep_namespace_strings {
   }
 }
 
+
+sub prune {
+  my ($self,@keywords) = @_;
+  die "must supply at least 1 prune keyword" unless (scalar(@keywords) > 0);
+  
+  my $data = clone( $self->data );
+  
+  my @meths = map {
+    my $meth = join('_','__prune',$_);
+    $self->can($meth) or die "Bad prune keyword '$_' (no such method '$meth')";
+    $meth
+  } @keywords;
+  
+  $self->$_($data) for (@meths);
+
+  __PACKAGE__->new({ data => $data })
+}
+
+
+sub __prune_isa {
+  my ($self, $data) = @_;
+  $self->_prune_whole_source_key('isa',$data)
+}
+
+sub __prune_constraints {
+  my ($self, $data) = @_;
+  $self->_prune_whole_source_key('constraints',$data)
+}
+
+sub __prune_relationships {
+  my ($self, $data) = @_;
+  $self->_prune_whole_source_key('relationships',$data)
+}
+
+sub __prune_columns {
+  my ($self, $data) = @_;
+  $self->_prune_whole_source_key('columns',$data)
+}
+
+
+sub __prune_private_col_attrs {
+  my ($self, $data) = @_;
+  
+  for my $rsrcData (values %{ $data->{sources} }) {
+    if(my $columns = $rsrcData->{columns}) {
+      for my $attrs (values %$columns) {
+        # delete all keys starting with underscore '_'
+        $_ =~ /^_/ and delete $attrs->{$_} for (keys %$attrs);
+      }
+    }
+  }
+  
+  $data
+}
+
+
+sub _prune_whole_source_key {
+  my ($self, $key, $data) = @_;
+  
+  for my $rsrcData (values %{ $data->{sources} }) {
+    delete $rsrcData->{$key} if exists $rsrcData->{$key}
+  }
+  
+  $data
+}
+
+
+
+
 1;
 
 
@@ -237,6 +307,26 @@ Returns C<data> as a serialized JSON string.
 
 Writes output of C<dump_json()> to the supplied filename as long as it doesn't already exists. If the
 file already exists, an exception is thrown.
+
+=head2 prune
+
+Accepts a list of one or more prune C<keywords> and returns a new C<SchemaData> object with the
+specified information pruned/stripped from the C<data>. Currently supported prune keywords:
+
+=over 4
+
+=item isa
+
+=item constraints
+
+=item relationships
+
+=item columns
+
+=item private_col_attrs
+
+=back
+
 
 =head1 SEE ALSO
 
