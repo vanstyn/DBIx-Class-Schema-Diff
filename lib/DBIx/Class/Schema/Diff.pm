@@ -4,7 +4,7 @@ use warnings;
 
 # ABSTRACT: Simple Diffing of DBIC Schemas
 
-our $VERSION = '1.07';
+our $VERSION = 1.07_01;
 
 use Moo;
 with 'DBIx::Class::Schema::Diff::Role::Common';
@@ -13,7 +13,7 @@ use Types::Standard qw(:all);
 use Module::Runtime;
 use Try::Tiny;
 use List::Util;
-use Hash::Layout;
+use Hash::Layout 1.02_01;
 use Array::Diff;
 
 use DBIx::Class::Schema::Diff::Schema;

@@ -84,24 +84,16 @@ sub _info_filter {
       $self->_is_skip( 'events' => $items->{$name}{_event})
       || $self->skip_type_id($s_name, $type => $name )
     );
-
-    if($items->{$name}{_event} eq 'changed') {
     
-      my $check = $self->test_path($s_name, $type, $name);
-      if($check && ref($check) eq 'HASH') {
-        my $new_diff = $self->_deep_value_filter(
-          $items->{$name}{diff}, $s_name, $type, $name
-        ) or next;
+    if($items->{$name}{_event} eq 'changed') {
+      my $new_diff = $self->_deep_value_filter(
+        $items->{$name}{diff},$s_name, $type, $name
+      ) or next;
         
-        $new_items->{$name} = {
-          _event => 'changed',
-          diff   => $new_diff
-        };
-      }
-      else {
-        # Allow through as-is:
-        $new_items->{$name} = $items->{$name};# if ($check);
-      }
+      $new_items->{$name} = {
+        _event => 'changed',
+        diff   => $new_diff
+      };
     }
     else {
       # Allow through as-is:
@@ -120,7 +112,7 @@ sub _deep_value_filter {
   for my $k (keys %$hash) {
     my $val = $hash->{$k};
     my $set = $self->test_path(@path,$k);
-    
+
     if($set) {
       if($val && ref($val) eq 'HASH' && ref($set) eq 'HASH' && scalar(keys %$val) > 0) {
         $new_hash->{$k} = $self->_deep_value_filter($val,@path,$k);
@@ -197,12 +189,12 @@ sub skip_type_id {
 
 sub test_path {
   my ($self, @path) = @_;
-  return $self->test_leaf_path(@path) || $self->match->lookup_path(@path);
+  return $self->test_leaf_path(@path) || $self->match->lookup_path(@path)
 }
 
 sub test_leaf_path {
   my ($self, @path) = @_;
-  my $ret = $self->match->lookup_leaf_path(@path);
+  my $ret = $self->match->lookup_leaf_path(@path) || $self->match->lookup_path_globmatch(@path);
   push @{$self->matched_paths}, \@path if (
     $ret 
     # We don't want to record the path as "matched" for empty HashRef {} leafs 
