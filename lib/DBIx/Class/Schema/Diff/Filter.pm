@@ -86,15 +86,38 @@ sub _info_filter {
     );
     
     if($items->{$name}{_event} eq 'changed') {
-      my $new_diff = $self->_deep_value_filter(
-        $items->{$name}{diff},$s_name, $type, $name
-      ) or next;
-        
-      $new_items->{$name} = {
-        _event => 'changed',
-        diff   => $new_diff
-      };
+    
+      my $check = $self->test_path($s_name, $type, $name);
+      my $filter_deep = ($check && ref($check) eq 'HASH');
+      
+      unless($filter_deep) {
+        my $diff = $items->{$name}{diff};
+        for my $k (keys %$diff) {
+          if($self->match->lookup_path_globmatch($s_name, $type, $name, $k)) {
+            $filter_deep = 1;
+            last;
+          }
+        }
+      }
+      
+      if($filter_deep) {
+        my $new_diff = $self->_deep_value_filter(
+          $items->{$name}{diff}, $s_name, $type, $name
+        ) or next;
+      
+        $new_items->{$name} = {
+          _event => 'changed',
+          diff   => $new_diff
+        };
+      }
+      else {
+        # Allow through as-is:
+        $new_items->{$name} = $items->{$name};# if ($check);
+      }
     }
+    
+    
+    
     else {
       # Allow through as-is:
       $new_items->{$name} = $items->{$name};
