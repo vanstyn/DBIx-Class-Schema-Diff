@@ -33,9 +33,9 @@ use Try::Tiny;
 use DBIx::Class::Schema::Diff::Source;
 use DBIx::Class::Schema::Diff::SchemaData;
 
-has 'old_schema', required => 1, is => 'ro', isa => InstanceOf[
+has 'old_schema', is => 'ro', isa => Maybe[InstanceOf[
   'DBIx::Class::Schema::Diff::SchemaData'
-], coerce => \&_coerce_schema_data;
+]], coerce => sub { $_[0] ? &_coerce_schema_data($_[0]) : $_[0] }, default => sub { undef };
 
 has 'new_schema', required => 1, is => 'ro', isa => InstanceOf[
   'DBIx::Class::Schema::Diff::SchemaData'
@@ -48,7 +48,7 @@ sub all_source_names {
   my ($o,$n) = ($self->old_schema,$self->new_schema);
   
   # List of all sources in old, new, or both:
-  return uniq($o->sources,$n->sources);
+  return uniq($o ? $o->sources : (),$n->sources);
 }
 
 has 'sources', is => 'ro', lazy => 1, default => sub {
@@ -57,7 +57,9 @@ has 'sources', is => 'ro', lazy => 1, default => sub {
   return { map {
     $_ => DBIx::Class::Schema::Diff::Source->new(
       name         => $_,
-      old_source   => scalar try{$self->old_schema->source($_)},
+      $self->old_schema 
+        ? ( old_source => scalar try{$self->old_schema->source($_)} )
+        : ( diff_added => 1 ),
       new_source   => scalar try{$self->new_schema->source($_)},
       _schema_diff => $self,
     )
