@@ -529,9 +529,8 @@ to some of these concepts.
 
 =item *
 
-Filter string arguments are I<NOT> glob patterns, so you can't do things like C<'Arti*'> to match
-sub-strings (this may be a worthwhile feature to add in a later version). The wildcard C<*> applies
-to whole items only.
+As of version 1.1 filter string arguments I<are> glob patterns, so you can also do things like 
+C<'Arti*'> to match sub-strings. See the unit tests for examples.
 
 =item *
 
