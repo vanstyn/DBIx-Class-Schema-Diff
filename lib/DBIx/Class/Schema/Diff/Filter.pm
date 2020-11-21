@@ -73,6 +73,13 @@ sub source_filter {
   return (scalar(keys %$newd) > 0) ? $newd : undef;
 }
 
+sub _should_skip_info_item {
+  my ($self, $type, $s_name, $name, $data) = @_;
+  return 1 if ($self->_is_skip( 'events' => $data->{_event} ));
+  return 1 if ($self->skip_type_id($s_name, $type => $name ));
+  return 0
+}
+
 sub _info_filter {
   my ($self, $type, $s_name, $items) = @_;
   return undef unless ($items);
@@ -80,25 +87,29 @@ sub _info_filter {
   my $new_items = {};
 
   for my $name (keys %$items) {
-    next if (
-      $self->_is_skip( 'events' => $items->{$name}{_event})
-      || $self->skip_type_id($s_name, $type => $name )
-    );
+  
+    #next if ($self->_should_skip_info_item($type, $s_name, $name, $items->{$name}));
     
     if($items->{$name}{_event} eq 'changed') {
     
       my $check = $self->test_path($s_name, $type, $name);
+      my $globmatch = 0;
       my $filter_deep = ($check && ref($check) eq 'HASH');
       
       unless($filter_deep) {
         my $diff = $items->{$name}{diff};
         for my $k (keys %$diff) {
+       
           if($self->match->lookup_path_globmatch($s_name, $type, $name, $k)) {
-            $filter_deep = 1;
+            $globmatch = 1;
             last;
           }
         }
       }
+      
+      $filter_deep = ($check && ref($check) eq 'HASH') || $globmatch;
+      
+      next if (!$globmatch && $self->_should_skip_info_item($type, $s_name, $name, $items->{$name}));
       
       if($filter_deep) {
         my $new_diff = $self->_deep_value_filter(
@@ -112,15 +123,12 @@ sub _info_filter {
       }
       else {
         # Allow through as-is:
-        $new_items->{$name} = $items->{$name};# if ($check);
+        $new_items->{$name} = $items->{$name} unless ($self->_should_skip_info_item($type, $s_name, $name, $items->{$name}))
       }
     }
-    
-    
-    
     else {
       # Allow through as-is:
-      $new_items->{$name} = $items->{$name};
+      $new_items->{$name} = $items->{$name} unless ($self->_should_skip_info_item($type, $s_name, $name, $items->{$name}))
         #if($self->match->lookup_leaf_path($s_name, $type, $name));
     }
   }
@@ -200,6 +208,7 @@ sub skip_type_id {
   
   if($self->mode eq 'limit') {
     return 0 if ($self->empty_match);
+
     # If this source/type is set, OR if the entire source or source/type is included:
     return $set
       || $self->test_leaf_path($s_name)

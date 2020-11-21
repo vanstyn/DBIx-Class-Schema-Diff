@@ -4,7 +4,7 @@ use warnings;
 
 # ABSTRACT: Simple Diffing of DBIC Schemas
 
-our $VERSION = 1.07_02;
+our $VERSION = 1.07_03;
 
 use Moo;
 with 'DBIx::Class::Schema::Diff::Role::Common';
@@ -13,7 +13,7 @@ use Types::Standard qw(:all);
 use Module::Runtime;
 use Try::Tiny;
 use List::Util;
-use Hash::Layout 1.02_02;
+use Hash::Layout 1.02_04;
 use Array::Diff;
 
 use DBIx::Class::Schema::Diff::Schema;
@@ -100,6 +100,16 @@ sub filter_out {
 
 sub _coerce_filter_args {
   my ($self,@args) = @_;
+  
+  # This is the cleanest solution for wildcards to match as expected, not requiring the
+  # user to append a trailing '*' since they don't have to when doing an exact match
+  @args = map {
+    my ($one,$two) = ($_ && ! ref($_)) ? split (/\:/,$_,2) : ();
+    (
+      $one && $two && $one ne '*' && ($one =~ /\*/)
+      && ($two eq 'columns' || $two eq 'relationships' || $two eq 'constraints')
+    ) ? $_.'*' : $_
+  } @args;
   
   my $params = (
     scalar(@args) > 1
