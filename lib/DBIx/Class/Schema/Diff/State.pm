@@ -49,15 +49,31 @@ DBIx::Class::Schema::Diff::State - Diff object of a single schema
 
 =head1 SYNOPSIS
 
- use DBIx::Class::Schema::Diff::SchemaState;
+ use DBIx::Class::Schema::Diff::State;
  
+ my $State = DBIx::Class::Schema::Diff::State->new(
+  schema => $schema
+ );
  
+ $State = $State->filter_out('isa');
+ 
+ # Get all info about the schema as 'differences' (hash structure):
+ my $hash = $D->diff;
+ 
+ # Git a checksum/fingerprint of the schema state data:
+ my $checksum = $State->fingerprint;
 
 =head1 DESCRIPTION
 
+This class is a subclass of L<DBIx::Class::Schema::Diff> and shares the same API
+but instead of requiring a C<old_schema> and a C<new_schema>, it requires a single
+C<schema> and then the "diff" is returned as if *everything* changed.
 
+This simply provides a way to explore the state/data of a single schema using the
+same data structure as that of a normal diff between two schemas, and supporting
+the very powerful, chainable C<filter> and C<filter_out> methods.
 
-=head1 METHODS
+This
 
 
 =head1 SEE ALSO

@@ -208,6 +208,9 @@ DBIx::Class::Schema::Diff - Identify differences between two DBIx::Class schemas
    new_schema => 'My::Schema1'
  );
  
+ # Git a checksum/fingerprint of the diff data:
+ my $checksum = $D->fingerprint;
+ 
 
 Filtering the diff:
 
@@ -405,6 +408,10 @@ See L<FILTERING|DBIx::Class::Schema::Diff#FILTERING> for filter argument syntax.
 Works like C<filter()> but the arguments exclude differences rather than restrict/limit to them.
 
 See L<FILTERING|DBIx::Class::Schema::Diff#FILTERING> for filter argument syntax.
+
+=head2 fingerprint
+
+Returns a SHA1 checksum (as a 15 character string) of the diff data.
 
 =head1 FILTERING
 
