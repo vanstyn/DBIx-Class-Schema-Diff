@@ -4,7 +4,7 @@ use warnings;
 
 # ABSTRACT: Simple Diffing of DBIC Schemas
 
-our $VERSION = 1.10_02;
+our $VERSION = 1.11;
 
 use Moo;
 with 'DBIx::Class::Schema::Diff::Role::Common';
